@@ -21,9 +21,8 @@ export const translations = {
     outOfTokens: 'Out of Tokens!',
     tokensRemaining: 'tokens remaining',
     tokensLabel: 'Tokens',
-    noTokensMessage: "You've reached your daily AI usage limit (0 tokens left).",
-    waitForReset: 'Please wait until your tokens reset at 23:59 WIB.',
-    resetsIn: 'Resets in',
+    noTokensMessage: "You've used all your free tokens (0 tokens left).",
+    waitForReset: 'You can still manually edit diagrams in the visual editor.',
   },
     hero: {
       badge: 'Powered by Built-in AI',
@@ -176,7 +175,7 @@ export const translations = {
         },
         {
           question: 'Is Structura Diagram free to use?',
-          answer: 'Yes! Structura Diagram is free to use with a daily limit of 10 AI-generated diagrams per day. Your token balance resets automatically every day at 23:59 WIB. We plan to introduce premium plans in the future with higher limits and additional benefits.',
+          answer: 'Yes! Structura Diagram is free to use with 10 free one-time AI-generated diagrams. We plan to introduce premium plans in the future with higher limits and additional benefits.',
         },
         {
           question: 'Can I export my diagrams?',
@@ -188,7 +187,7 @@ export const translations = {
         },
         {
           question: 'What happens if my tokens run out?',
-          answer: 'Each AI-generated diagram uses 1 token. If your tokens reach 0, you\'ll see a popup message letting you know your limit has been reached, along with a countdown timer until tokens reset at 23:59 WIB. You can still manually edit diagrams in the visual editor even when tokens are depleted.',
+          answer: 'Each AI-generated diagram uses 1 token. If your tokens reach 0, you\'ll see a popup message letting you know your free tokens have been used. You can still manually edit diagrams in the visual editor even when tokens are depleted.',
         },
         {
           question: 'What if the AI makes a mistake or misinterprets my input?',
@@ -240,9 +239,8 @@ export const translations = {
     outOfTokens: 'Token Habis!',
     tokensRemaining: 'token tersisa',
     tokensLabel: 'Token',
-    noTokensMessage: 'Anda telah mencapai batas penggunaan AI harian (0 token tersisa).',
-    waitForReset: 'Silakan tunggu hingga token Anda direset pada pukul 23:59 WIB.',
-    resetsIn: 'Reset dalam',
+    noTokensMessage: 'Anda telah menggunakan semua token gratis Anda (0 token tersisa).',
+    waitForReset: 'Anda masih dapat mengedit diagram secara manual di editor visual.',
   },
     hero: {
       badge: 'Didukung oleh AI Bawaan',
@@ -395,7 +393,7 @@ export const translations = {
         },
         {
           question: 'Apakah Structura Diagram gratis untuk digunakan?',
-          answer: 'Ya! Structura Diagram gratis digunakan dengan batas harian 10 diagram bertenaga AI per hari. Saldo token Anda akan direset secara otomatis setiap hari pada pukul 23:59 WIB. Kami berencana untuk memperkenalkan paket premium di masa depan dengan batas lebih tinggi dan manfaat tambahan.',
+          answer: 'Ya! Structura Diagram gratis digunakan dengan 10 token gratis sekali waktu untuk diagram bertenaga AI. Kami berencana untuk memperkenalkan paket premium di masa depan dengan batas lebih tinggi dan manfaat tambahan.',
         },
         {
           question: 'Bisakah saya mengekspor diagram saya?',
@@ -407,7 +405,7 @@ export const translations = {
         },
         {
           question: 'Apa yang terjadi jika token saya habis?',
-          answer: 'Setiap diagram bertenaga AI menggunakan 1 token. Jika token Anda mencapai 0, Anda akan melihat pesan popup yang memberi tahu bahwa batas Anda telah tercapai, bersama dengan timer hitung mundur hingga token direset pada pukul 23:59 WIB. Anda masih dapat mengedit diagram secara manual di editor visual meskipun token habis.',
+          answer: 'Setiap diagram bertenaga AI menggunakan 1 token. Jika token Anda mencapai 0, Anda akan melihat pesan popup yang memberi tahu bahwa token gratis Anda telah digunakan. Anda masih dapat mengedit diagram secara manual di editor visual meskipun token habis.',
         },
         {
           question: 'Bagaimana jika AI membuat kesalahan atau salah menginterpretasikan input saya?',

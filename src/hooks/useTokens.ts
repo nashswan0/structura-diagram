@@ -16,6 +16,7 @@ export const useTokens = () => {
   const fetchTokens = async (userId: string) => {
     try {
       // Check if user is admin
+      // @ts-ignore - Database types are auto-generated
       const { data: adminData } = await supabase.rpc('is_admin', {
         _user_id: userId,
       });
@@ -23,16 +24,18 @@ export const useTokens = () => {
       setIsAdmin(adminData || false);
       
       // Fetch tokens
-      const { data, error } = await supabase
+      const result: any = await (supabase as any)
         .from('user_tokens')
         .select('tokens_remaining, last_reset')
         .eq('user_id', userId)
         .single();
+      
+      const { data, error } = result;
 
       if (error) throw error;
 
       if (data) {
-        setTokens(data.tokens_remaining);
+        setTokens((data as any).tokens_remaining);
       }
     } catch (error) {
       console.error('Error fetching tokens:', error);
@@ -45,6 +48,7 @@ export const useTokens = () => {
     if (!user) return false;
 
     try {
+      // @ts-ignore - Database types are auto-generated
       const { data, error } = await supabase.rpc('consume_token', {
         user_uuid: user.id,
       });
@@ -64,26 +68,6 @@ export const useTokens = () => {
     }
   };
 
-  const getTimeUntilReset = () => {
-    const now = new Date();
-    const wibOffset = 7 * 60; // WIB is UTC+7
-    const nowWIB = new Date(now.getTime() + (wibOffset + now.getTimezoneOffset()) * 60000);
-    
-    const resetTime = new Date(nowWIB);
-    resetTime.setHours(23, 59, 0, 0);
-    
-    // If we're past 23:59, set reset time to tomorrow
-    if (nowWIB.getTime() > resetTime.getTime()) {
-      resetTime.setDate(resetTime.getDate() + 1);
-    }
-    
-    const diff = resetTime.getTime() - nowWIB.getTime();
-    const hours = Math.floor(diff / (1000 * 60 * 60));
-    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-    const seconds = Math.floor((diff % (1000 * 60)) / 1000);
-    
-    return { hours, minutes, seconds };
-  };
 
   useEffect(() => {
     // Get initial session
@@ -138,7 +122,6 @@ export const useTokens = () => {
     loading,
     consumeToken,
     refreshTokens: user ? () => fetchTokens(user.id) : () => {},
-    getTimeUntilReset,
     isAdmin,
   };
 };

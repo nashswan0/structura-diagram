@@ -97,7 +97,7 @@ const AuthButton: React.FC<AuthButtonProps> = ({ onLoginClick, variant = 'defaul
                     <p className="text-xs text-muted-foreground">
                       {isAdmin 
                         ? 'You have unlimited tokens as an admin user.'
-                        : 'You get 10 free tokens daily. Each AI diagram generation uses 1 token. Tokens reset at 23:59 WIB (UTC+7) every day.'}
+                        : 'You have 10 free one-time tokens. Each AI diagram generation uses 1 token.'}
                     </p>
                   </div>
                 </PopoverContent>
