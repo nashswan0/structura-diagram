@@ -1,0 +1,55 @@
+# --- Node & package managers ---
+node_modules/
+logs/
+*.log
+*.log.*
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# --- Build outputs ---
+dist/
+build/
+.tmp/
+temp/
+
+# --- Vite / tooling caches ---
+.vite/
+.cache/
+.eslintcache
+
+# --- TypeScript ---
+*.tsbuildinfo
+
+# --- Test coverage ---
+coverage/
+.nyc_output/
+
+# --- Environment files (keep only examples) ---
+.env
+.env.*
+!.env.example
+
+# --- OS / Editor junk ---
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+
+# --- Supabase local artifacts ---
+.supabase/
+supabase/.temp/
+supabase/.branches/
+supabase/.env
+# If any function folders use Node bundling in future
+supabase/functions/**/node_modules/
+supabase/functions/**/dist/
+supabase/config.toml
+
+# --- Misc ---
+*.swp
+*.swo
+*.local
