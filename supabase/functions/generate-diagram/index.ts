@@ -74,9 +74,9 @@ Now generate the most accurate diagram possible for the user's request.
         body: JSON.stringify({
           contents: [{ parts: [{ text: `${systemPrompt}\n\n${userPrompt}` }] }],
           generationConfig: {
-            temperature: 0.5,           // Lebih fokus, hasil lebih stabil
-            topP: 0.9,
-            topK: 40,
+            temperature: 0.7,           // Lebih fokus, hasil lebih stabil
+            topP: 0.95,
+            topK: 50,
             candidateCount: 1,
             maxOutputTokens: 8192,      // 💥 Increased token limit for longer responses
             responseMimeType: "text/plain",

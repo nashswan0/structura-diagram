@@ -24,23 +24,44 @@ const SupportedDiagrams = () => {
   const { t } = useLanguage();
 
   const diagrams = [
+    // UML Diagrams
+    { icon: ListOrdered, name: 'Sequence', color: 'text-purple-500 dark:text-purple-400' },
+    { icon: Box, name: 'Use Case', color: 'text-blue-500 dark:text-blue-400' },
+    { icon: Workflow, name: 'Activity', color: 'text-cyan-500 dark:text-cyan-400' },
+    { icon: Box, name: 'Class', color: 'text-green-500 dark:text-green-400' },
+    { icon: Layers, name: 'Component', color: 'text-teal-500 dark:text-teal-400' },
+    { icon: Box, name: 'Object', color: 'text-emerald-500 dark:text-emerald-400' },
+    { icon: Building, name: 'Deployment', color: 'text-indigo-500 dark:text-indigo-400' },
+    { icon: CircuitBoard, name: 'State', color: 'text-orange-500 dark:text-orange-400' },
+    { icon: Clock, name: 'Timing', color: 'text-amber-500 dark:text-amber-400' },
+    
+    // Process Flow
     { icon: Workflow, name: 'Flowchart', color: 'text-blue-500 dark:text-blue-400' },
-    { icon: ListOrdered, name: 'Sequence Diagram', color: 'text-purple-500 dark:text-purple-400' },
-    { icon: Box, name: 'Class Diagram', color: 'text-green-500 dark:text-green-400' },
-    { icon: CircuitBoard, name: 'State Diagram', color: 'text-orange-500 dark:text-orange-400' },
-    { icon: Database, name: 'Entity Relationship Diagram', color: 'text-pink-500 dark:text-pink-400' },
     { icon: Route, name: 'User Journey', color: 'text-cyan-500 dark:text-cyan-400' },
+    
+    // Data & Database
+    { icon: Database, name: 'Entity Relationship', color: 'text-pink-500 dark:text-pink-400' },
+    
+    // Architecture
+    { icon: Building, name: 'Architecture', color: 'text-sky-500 dark:text-sky-400' },
+    { icon: Layers, name: 'C4', color: 'text-emerald-500 dark:text-emerald-400' },
+    { icon: Building, name: 'Archimate', color: 'text-violet-500 dark:text-violet-400' },
+    
+    // Project Management
     { icon: Calendar, name: 'Gantt', color: 'text-indigo-500 dark:text-indigo-400' },
+    { icon: Kanban, name: 'Kanban', color: 'text-lime-500 dark:text-lime-400' },
+    { icon: Clock, name: 'Timeline', color: 'text-amber-500 dark:text-amber-400' },
+    
+    // Data Visualization
     { icon: PieChart, name: 'Pie Chart', color: 'text-yellow-500 dark:text-yellow-400' },
     { icon: Grid3x3, name: 'Quadrant Chart', color: 'text-red-500 dark:text-red-400' },
-    { icon: FileCheck, name: 'Requirement Diagram', color: 'text-teal-500 dark:text-teal-400' },
-    { icon: GitBranch, name: 'GitGraph (Git) Diagram', color: 'text-violet-500 dark:text-violet-400' },
-    { icon: Layers, name: 'C4 Diagram', color: 'text-emerald-500 dark:text-emerald-400' },
+    { icon: Network, name: 'Sankey', color: 'text-rose-500 dark:text-rose-400' },
+    
+    // Other
+    { icon: GitBranch, name: 'GitGraph', color: 'text-violet-500 dark:text-violet-400' },
     { icon: Brain, name: 'Mindmaps', color: 'text-fuchsia-500 dark:text-fuchsia-400' },
-    { icon: Clock, name: 'Timeline', color: 'text-amber-500 dark:text-amber-400' },
-    { icon: Network, name: 'Sankey Beta', color: 'text-rose-500 dark:text-rose-400' },
-    { icon: Kanban, name: 'Kanban', color: 'text-lime-500 dark:text-lime-400' },
-    { icon: Building, name: 'Architecture', color: 'text-sky-500 dark:text-sky-400' },
+    { icon: FileCheck, name: 'Requirement', color: 'text-teal-500 dark:text-teal-400' },
+    { icon: Network, name: 'Network', color: 'text-slate-500 dark:text-slate-400' },
   ];
 
   return (

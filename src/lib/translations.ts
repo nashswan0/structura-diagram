@@ -39,14 +39,14 @@ export const translations = {
         tooltip: 'Generate professional diagrams in just 5-10 seconds',
       },
       types: {
-        value: '17+',
+        value: '25+',
         label: 'Diagram Types Supported',
-        tooltip: 'Flowchart, Class Diagram, Sequence Diagram, ERD & 13 more diagram types',
+        tooltip: 'UML, Flowchart, ERD, Architecture & 22 more diagram types',
       },
       tokens: {
         value: '10',
-        label: 'Free Usage / Day',
-        tooltip: 'Generate up to 10 diagrams daily using our built-in AI',
+        label: 'Free Usage',
+        tooltip: 'Generate up to 10 diagrams using our built-in AI',
       },
       aiHandling: {
         value: 'Smart AI',
@@ -149,7 +149,7 @@ export const translations = {
       },
     },
     supportedDiagrams: {
-      title: '17+ Supported',
+      title: '25+ Supported',
       titleHighlight: 'Diagram Types',
       subtitle: 'From flowcharts to architecture diagrams, create any visualization you need',
     },
@@ -257,14 +257,14 @@ export const translations = {
         tooltip: 'Buat diagram profesional hanya dalam 5-10 detik',
       },
       types: {
-        value: '17+',
+        value: '25+',
         label: 'Jenis Diagram Didukung',
-        tooltip: 'Flowchart, Class Diagram, Sequence Diagram, ERD & 13 jenis diagram lainnya',
+        tooltip: 'UML, Flowchart, ERD, Architecture & 22 jenis diagram lainnya',
       },
       tokens: {
         value: '10',
-        label: 'Penggunaan Gratis / Hari',
-        tooltip: 'Buat hingga 10 diagram setiap hari menggunakan AI bawaan kami',
+        label: 'Penggunaan Gratis',
+        tooltip: 'Buat hingga 10 diagram menggunakan AI bawaan kami',
       },
       aiHandling: {
         value: 'AI Cerdas',
@@ -367,7 +367,7 @@ export const translations = {
       },
     },
     supportedDiagrams: {
-      title: '17+ Jenis',
+      title: '25+ Jenis',
       titleHighlight: 'Diagram Didukung',
       subtitle: 'Dari flowchart hingga diagram arsitektur, buat visualisasi apa pun yang Anda butuhkan',
     },
