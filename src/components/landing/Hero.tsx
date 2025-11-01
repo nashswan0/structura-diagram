@@ -52,14 +52,15 @@ const Hero = () => {
             </span>
           </div>
           
-          <h1 className="text-3xl sm:text-5xl md:text-6xl lg:text-7xl font-display font-bold mb-4 md:mb-6 leading-tight animate-fade-in">
+          <h1 className="text-4xl md:text-6xl font-display font-bold mb-4 md:mb-6 leading-tight animate-fade-in">
             {t.hero.title}
-            <span className="block bg-gradient-primary bg-clip-text text-transparent">
+            <span className="bg-gradient-primary bg-clip-text text-transparent">
               {t.hero.titleHighlight}
             </span>
+            {t.hero.titleRest}
           </h1>
           
-          <p className="text-base md:text-xl text-slate-600 dark:text-slate-400 mb-6 md:mb-8 max-w-2xl mx-auto animate-slide-in">
+          <p className="text-base md:text-lg text-slate-600 dark:text-slate-400 mb-6 md:mb-8 max-w-2xl mx-auto animate-slide-in">
             {t.hero.description}
           </p>
           

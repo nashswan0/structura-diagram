@@ -68,11 +68,11 @@ const SupportedDiagrams = () => {
     <section className="py-20 px-4 sm:px-6 lg:px-8 border-b border-border/50">
       <div className="container mx-auto">
         <div className="text-center mb-12 animate-fade-in">
-          <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-4">
+          <h2 className="text-3xl md:text-5xl font-bold mb-4">
             <span className="text-foreground">{t.supportedDiagrams.title} </span>
             <span className="bg-gradient-primary bg-clip-text text-transparent">{t.supportedDiagrams.titleHighlight}</span>
           </h2>
-          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+          <p className="text-base md:text-lg text-muted-foreground max-w-2xl mx-auto">
             {t.supportedDiagrams.subtitle}
           </p>
         </div>

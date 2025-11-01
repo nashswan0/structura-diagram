@@ -32,13 +32,13 @@ const HowItWorks = () => {
     <section id="how-it-works" className="py-24 bg-slate-50 dark:bg-slate-950">
       <div className="container mx-auto px-6">
         <div className="text-center mb-16 animate-fade-in">
-          <h2 className="text-5xl font-display font-bold mb-4">
+          <h2 className="text-3xl md:text-5xl font-display font-bold mb-4">
             {t.howItWorks.title}
             <span className="block bg-gradient-primary bg-clip-text text-transparent">
               {t.howItWorks.titleHighlight}
             </span>
           </h2>
-          <p className="text-xl text-slate-600 dark:text-slate-400 max-w-2xl mx-auto">
+          <p className="text-base md:text-lg text-slate-600 dark:text-slate-400 max-w-2xl mx-auto">
             {t.howItWorks.subtitle}
           </p>
         </div>
