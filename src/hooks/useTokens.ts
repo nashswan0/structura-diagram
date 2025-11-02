@@ -4,7 +4,6 @@ import { User } from '@supabase/supabase-js';
 
 interface TokenData {
   tokens_remaining: number;
-  last_reset: string;
 }
 
 export const useTokens = () => {
@@ -26,7 +25,7 @@ export const useTokens = () => {
       // Fetch tokens
       const result: any = await (supabase as any)
         .from('user_tokens')
-        .select('tokens_remaining, last_reset')
+        .select('tokens_remaining')
         .eq('user_id', userId)
         .single();
       
