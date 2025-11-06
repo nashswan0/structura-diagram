@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Download, Home, Moon, Sun } from "lucide-react";
 import { useNavigate } from 'react-router-dom';
 import { useIsMobile } from '@/hooks/use-mobile';
+import structuraLogo from '@/assets/structura-logo.png';
 
 interface HeaderProps {
   onExport: () => void;
@@ -17,14 +18,16 @@ const Header: React.FC<HeaderProps> = ({
 }) => {
   const navigate = useNavigate();
   const isMobile = useIsMobile();
-  
+
   return (
     <header className="w-full py-3 md:py-4 px-3 md:px-6 border-b border-slate-200/80 dark:border-slate-800/80 backdrop-blur-sm bg-white/50 dark:bg-black/30 animate-fade-in">
       <div className="container max-w-full flex items-center justify-between gap-2">
         <div className="flex items-center space-x-1.5 md:space-x-3 min-w-0">
-          <div className="h-7 w-7 md:h-8 md:w-8 rounded-lg bg-gradient-primary flex items-center justify-center flex-shrink-0">
-            <span className="text-white font-semibold text-sm md:text-base">S</span>
-          </div>
+          <img
+            src={structuraLogo}
+            alt="Structura Logo"
+            className="h-7 w-7 md:h-8 md:w-8 flex-shrink-0 object-contain"
+          />
           <h1 className="text-sm md:text-xl font-display font-semibold bg-gradient-primary bg-clip-text text-transparent truncate">
             Structura Diagram
           </h1>
@@ -36,12 +39,12 @@ const Header: React.FC<HeaderProps> = ({
             </div>
           )}
         </div>
-        
+
         <div className="flex items-center space-x-1.5 md:space-x-3 flex-shrink-0">
-          <Button 
-            variant="outline" 
-            size="sm" 
-            className="glass-button" 
+          <Button
+            variant="outline"
+            size="sm"
+            className="glass-button"
             onClick={() => navigate('/')}
           >
             <Home size={14} className={isMobile ? "" : "mr-2"} />
@@ -50,10 +53,10 @@ const Header: React.FC<HeaderProps> = ({
           <Button variant="outline" size="sm" className="glass-button" onClick={toggleTheme}>
             {isDarkMode ? <Sun size={14} /> : <Moon size={14} />}
           </Button>
-          <Button 
-            variant="outline" 
-            size="sm" 
-            className="glass-button" 
+          <Button
+            variant="outline"
+            size="sm"
+            className="glass-button"
             onClick={onExport}
           >
             <Download size={14} className={isMobile ? "" : "mr-2"} />
