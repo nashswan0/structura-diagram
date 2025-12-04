@@ -45,20 +45,36 @@ Return the complete and valid diagram syntax code that renders without errors.
 
 Rules:
 - Detect the diagram type from the code (Mermaid or PlantUML) and fix accordingly.
-- Output ONLY valid diagram syntax (no markdown, no explanations).
+- Output ONLY valid diagram syntax (no markdown, no explanations, no comments).
 - Be fast and concise but ensure all relationships and structures are complete.
 - Always include nodes and connections if missing.
-- For Mermaid: Use proper syntax like graph TD, flowchart LR, etc.
+- For Mermaid: Use proper syntax like graph TD, flowchart LR, sequenceDiagram, etc.
 - For PlantUML: Use proper @startuml/@enduml tags and syntax.
+- Fix common errors:
+  * Invalid node IDs (use alphanumeric, no special chars except underscore/hyphen)
+  * Missing quotes for labels with spaces or special characters
+  * Incorrect arrow syntax (use --> or --- for Mermaid)
+  * Malformed connections or cyclic dependencies
+  * Invalid shape syntax (use correct brackets: [], (), {}, etc.)
+  * Missing semicolons or line breaks between statements
+- Validate the output is 100% renderable before returning.
 `;
 
     const userPrompt = `
-Error message: ${error}
+🔴 ERROR DETECTED:
+${error}
 
-Here is the current diagram code:
+📋 CURRENT DIAGRAM CODE:
 ${code}
 
-Fix and return only the valid diagram code.
+🎯 TASK:
+1. Analyze the error message carefully
+2. Identify the exact line/syntax causing the error
+3. Fix the error while preserving the diagram's intent and structure
+4. Ensure all nodes, connections, and labels are valid
+5. Return ONLY the corrected diagram code (no explanations)
+
+IMPORTANT: The output must be immediately renderable without any modifications.
 `;
 
     // ✅ Fungsi untuk request ke Gemini API (fast optimized)
@@ -78,7 +94,7 @@ Fix and return only the valid diagram code.
               temperature: 0.3,        // Lebih rendah = fokus dan cepat
               topP: 0.8,               // Membatasi variasi untuk kecepatan
               topK: 40,                // Sampling terbatas agar efisien
-              maxOutputTokens: 1500,   // Masih cukup besar untuk output panjang
+              maxOutputTokens: 3000,   // Masih cukup besar untuk output panjang
               candidateCount: 1,       // Satu hasil saja = lebih cepat
             },
           }),
