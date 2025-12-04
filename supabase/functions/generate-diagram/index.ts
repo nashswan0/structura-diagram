@@ -35,6 +35,7 @@ Your mission is to generate a fully valid, complete, and immediately renderable 
 - If NOT UML-specific → use Mermaid syntax (flowchart, ERD, Gantt, Kanban, pie chart, git graph, state diagram, timeline, etc.)
 - If UML-specific → use PlantUML syntax (sequence, class, activity, use case, component, deployment, object, etc.)
 - Output ONLY the valid code (no markdown, no explanations, no comments).
+- Make sure to create the diagram based on the user's prompt language. If it's english, create diagram using english. If it's bahasa indonesia, create diagram using bahasa indonesia.
 
 📏 Formatting:
 - For Mermaid → pure Mermaid code only.
@@ -74,9 +75,9 @@ Now generate the most accurate diagram possible for the user's request.
         body: JSON.stringify({
           contents: [{ parts: [{ text: `${systemPrompt}\n\n${userPrompt}` }] }],
           generationConfig: {
-            temperature: 0.5,           // Lebih fokus, hasil lebih stabil
-            topP: 0.9,
-            topK: 40,
+            temperature: 0.7,           // Lebih fokus, hasil lebih stabil
+            topP: 0.95,
+            topK: 50,
             candidateCount: 1,
             maxOutputTokens: 8192,      // 💥 Increased token limit for longer responses
             responseMimeType: "text/plain",

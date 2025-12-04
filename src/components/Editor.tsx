@@ -6,6 +6,7 @@ import SimpleCodeEditor from 'react-simple-code-editor';
 import Prism from 'prismjs';
 import 'prismjs/components/prism-javascript';
 import 'prismjs/themes/prism-tomorrow.css';
+import TemplateSelector from './TemplateSelector';
 
 interface EditorProps {
   value: string;
@@ -26,7 +27,6 @@ const Editor: React.FC<EditorProps> = ({
 
   useEffect(() => {
     if (editorRef.current) {
-      // Auto-resize textarea
       editorRef.current.style.height = 'auto';
       editorRef.current.style.height = `${editorRef.current.scrollHeight}px`;
     }
@@ -40,7 +40,6 @@ const Editor: React.FC<EditorProps> = ({
       const newValue = value.substring(0, start) + '  ' + value.substring(end);
       onChange(newValue);
       
-      // Set cursor position after tab
       setTimeout(() => {
         if (editorRef.current) {
           editorRef.current.selectionStart = editorRef.current.selectionEnd = start + 2;
@@ -61,13 +60,19 @@ const Editor: React.FC<EditorProps> = ({
             value="code" 
             className="rounded-t-lg rounded-b-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent"
           >
-            Diagram Code
+            Code Input
           </TabsTrigger>
           <TabsTrigger 
             value="prompt" 
             className="rounded-t-lg rounded-b-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent"
           >
             AI Prompt
+          </TabsTrigger>
+          <TabsTrigger 
+            value="template" 
+            className="rounded-t-lg rounded-b-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent"
+          >
+            Template
           </TabsTrigger>
         </TabsList>
         
@@ -94,6 +99,12 @@ const Editor: React.FC<EditorProps> = ({
               className="editor-container h-full resize-none animate-fade-in"
               spellCheck="false"
             />
+          </div>
+        </TabsContent>
+        
+        <TabsContent value="template" className="flex-1 mt-0 h-0 overflow-hidden">
+          <div className="h-full p-4">
+            <TemplateSelector onSelectTemplate={onChange} />
           </div>
         </TabsContent>
       </Tabs>

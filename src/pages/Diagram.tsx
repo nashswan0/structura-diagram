@@ -17,16 +17,31 @@ const DEFAULT_DIAGRAM = `graph TD
 const Diagram = () => {
   const [code, setCode] = useState<string>(DEFAULT_DIAGRAM);
   const [prompt, setPrompt] = useState<string>("");
-  const [isDarkMode, setIsDarkMode] = useState<boolean>(false);
+  const [isDarkMode, setIsDarkMode] = useState<boolean>(() => {
+    // Read from localStorage, default to dark mode
+    const savedTheme = localStorage.getItem('theme');
+    return savedTheme === 'light' ? false : true;
+  });
 
   useEffect(() => {
-    const isDark = document.documentElement.classList.contains('dark');
-    setIsDarkMode(isDark);
+    // Apply theme from localStorage or default to dark
+    const savedTheme = localStorage.getItem('theme');
+    const shouldBeDark = savedTheme === 'light' ? false : true;
+    
+    if (shouldBeDark) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+    setIsDarkMode(shouldBeDark);
   }, []);
 
   const toggleTheme = () => {
     const newDarkMode = !isDarkMode;
     setIsDarkMode(newDarkMode);
+    
+    // Save to localStorage
+    localStorage.setItem('theme', newDarkMode ? 'dark' : 'light');
     
     if (newDarkMode) {
       document.documentElement.classList.add('dark');
@@ -270,7 +285,7 @@ const Diagram = () => {
         
         <div className="glass-panel p-4 text-center text-sm text-slate-500 dark:text-slate-400 animate-slide-in" style={{ animationDelay: '200ms' }}>
           <p>
-            Create beautiful diagrams with Mermaid and PlantUML syntax powered by AI assistance. 
+            Create beautiful diagrams powered by AI assistance. 
             Made with precision and care by Structura Diagram.
           </p>
         </div>

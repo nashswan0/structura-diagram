@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { useNavigate } from 'react-router-dom';
 import { Moon, Sun, Menu } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
+import structuraLogo from '@/assets/structura-logo.png';
 import {
   Drawer,
   DrawerClose,
@@ -16,19 +17,33 @@ import AuthButton from '@/components/auth/AuthButton';
 
 const Navbar = () => {
   const navigate = useNavigate();
-  const [isDarkMode, setIsDarkMode] = useState<boolean>(false);
+  const [isDarkMode, setIsDarkMode] = useState<boolean>(() => {
+    // Read from localStorage, default to dark mode
+    const savedTheme = localStorage.getItem('theme');
+    return savedTheme === 'light' ? false : true;
+  });
   const { language, setLanguage, t } = useLanguage();
   const isMobile = useIsMobile();
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
 
   useEffect(() => {
-    const isDark = document.documentElement.classList.contains('dark');
-    setIsDarkMode(isDark);
+    const savedTheme = localStorage.getItem('theme');
+    const shouldBeDark = savedTheme === 'light' ? false : true;
+    
+    if (shouldBeDark) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+    setIsDarkMode(shouldBeDark);
   }, []);
 
   const toggleTheme = () => {
     const newDarkMode = !isDarkMode;
     setIsDarkMode(newDarkMode);
+    
+    // Save to localStorage
+    localStorage.setItem('theme', newDarkMode ? 'dark' : 'light');
     
     if (newDarkMode) {
       document.documentElement.classList.add('dark');
@@ -47,9 +62,11 @@ const Navbar = () => {
         <div className="flex items-center justify-between">
           {/* Logo */}
           <div className="flex items-center space-x-1.5 md:space-x-2">
-            <div className="h-8 w-8 md:h-10 md:w-10 rounded-lg bg-gradient-primary flex items-center justify-center">
-              <span className="text-white font-bold text-base md:text-xl">S</span>
-            </div>
+            <img 
+              src={structuraLogo} 
+              alt="Structura Logo" 
+              className="h-8 w-8 md:h-10 md:w-10 object-contain"
+            />
             <span className="text-base md:text-2xl font-display font-bold bg-gradient-primary bg-clip-text text-transparent">
               Structura Diagram
             </span>
@@ -208,3 +225,4 @@ const Navbar = () => {
 };
 
 export default Navbar;
+
