@@ -261,9 +261,9 @@ const Diagram = () => {
         isDarkMode={isDarkMode}
       />
       
-      <main className="flex-1 container py-6 flex flex-col gap-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 flex-1">
-          <div className="glass-panel p-4 flex flex-col animate-slide-in">
+      <main className="flex-1 container py-3 md:py-6 px-2 md:px-4 flex flex-col gap-3 md:gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-6 flex-1">
+          <div className="glass-panel p-2 md:p-4 flex flex-col animate-slide-in">
             <Editor 
               value={code} 
               onChange={setCode} 
@@ -271,19 +271,19 @@ const Diagram = () => {
               promptValue={prompt}
               onPromptChange={setPrompt}
             />
-            <Separator className="my-4" />
+            <Separator className="my-3 md:my-4" />
             <AIPrompt 
               prompt={prompt} 
               onDiagramGenerated={handleDiagramGenerated} 
             />
           </div>
           
-          <div className="glass-panel p-4 flex flex-col animate-slide-in" style={{ animationDelay: '100ms' }}>
+          <div className="glass-panel p-2 md:p-4 flex flex-col animate-slide-in" style={{ animationDelay: '100ms' }}>
             <Preview code={code} className="flex-1" onCodeFixed={setCode} />
           </div>
         </div>
         
-        <div className="glass-panel p-4 text-center text-sm text-slate-500 dark:text-slate-400 animate-slide-in" style={{ animationDelay: '200ms' }}>
+        <div className="glass-panel p-3 md:p-4 text-center text-sm text-slate-500 dark:text-slate-400 animate-slide-in" style={{ animationDelay: '200ms' }}>
           <p>
             Create beautiful diagrams powered by AI assistance. 
             Made with precision and care by Structura Diagram.
