@@ -54,6 +54,7 @@ Your mission is to generate a fully valid, complete, and immediately renderable 
 - Each arrow or connection must be on its own line (or separated by a semicolon).
 - Ensure no cyclic dependencies, duplicated IDs, or malformed edges.
 - If invalid structure is detected, self-correct automatically.
+- Make sure to use the correct shape for each node.
 - Final output must be 100% valid and renderable without edits.
 
 🚀 Performance Optimization:
@@ -75,11 +76,11 @@ Now generate the most accurate diagram possible for the user's request.
         body: JSON.stringify({
           contents: [{ parts: [{ text: `${systemPrompt}\n\n${userPrompt}` }] }],
           generationConfig: {
-            temperature: 0.7,           // Lebih fokus, hasil lebih stabil
+            temperature: 0.7,           
             topP: 0.95,
             topK: 50,
             candidateCount: 1,
-            maxOutputTokens: 8192,      // 💥 Increased token limit for longer responses
+            maxOutputTokens: 8192,      
             responseMimeType: "text/plain",
           },
         }),
