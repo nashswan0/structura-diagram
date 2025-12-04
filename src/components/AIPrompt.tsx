@@ -113,9 +113,9 @@ const AIPrompt: React.FC<AIPromptProps> = ({ prompt, onDiagramGenerated, classNa
             </span>
           </div>
 
-          <p className="text-xs text-muted-foreground">
+          {/* <p className="text-xs text-muted-foreground">
             Powered by Gemini 2.5 Flash
-          </p>
+          </p> */}
         </div>
       </div>
 
