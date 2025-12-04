@@ -46,14 +46,14 @@ const AIPrompt: React.FC<AIPromptProps> = ({ prompt, onDiagramGenerated, classNa
 
     try {
       setLoading(true);
-      
+
       // Generate diagram first
       const diagram = await generateMermaidDiagram(prompt);
-      
+
       // Only consume token after successful generation (skip for admin)
       if (!isAdmin) {
         const tokenConsumed = await consumeToken();
-        
+
         if (!tokenConsumed) {
           toast({
             title: t.auth.outOfTokens,
@@ -63,12 +63,14 @@ const AIPrompt: React.FC<AIPromptProps> = ({ prompt, onDiagramGenerated, classNa
           return;
         }
       }
-      
+
       onDiagramGenerated(diagram);
-      
+
       toast({
         title: "Diagram generated",
-        description: `Your diagram has been generated successfully. ${!isAdmin ? `${tokens - 1} ${t.auth.tokensRemaining}` : ''}`,
+        description: isAdmin
+          ? "Your diagram has been generated successfully."
+          : "Your diagram has been generated successfully. Check your token counter for remaining tokens.",
       });
     } catch (error) {
       console.error('Error generating diagram:', error);
@@ -85,9 +87,9 @@ const AIPrompt: React.FC<AIPromptProps> = ({ prompt, onDiagramGenerated, classNa
   return (
     <>
       <div className={cn("flex flex-col sm:flex-row items-start sm:items-center gap-3", className)}>
-        <Button 
-          onClick={handleGenerate} 
-          disabled={loading || !prompt.trim() || (!isAdmin && tokens <= 0)} 
+        <Button
+          onClick={handleGenerate}
+          disabled={loading || !prompt.trim() || (!isAdmin && tokens <= 0)}
           className="min-w-32 bg-gradient-primary hover:opacity-90 transition-all duration-300 shadow-lg"
         >
           {loading ? (
@@ -102,7 +104,7 @@ const AIPrompt: React.FC<AIPromptProps> = ({ prompt, onDiagramGenerated, classNa
             </>
           )}
         </Button>
-        
+
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-accent/10 border border-border/50">
             <Coins className="h-4 w-4 text-primary" />
@@ -110,7 +112,7 @@ const AIPrompt: React.FC<AIPromptProps> = ({ prompt, onDiagramGenerated, classNa
               {t.auth.tokensLabel}: <span className="text-primary font-bold">{isAdmin ? '∞' : `${tokens}/10`}</span>
             </span>
           </div>
-          
+
           <p className="text-xs text-muted-foreground">
             Powered by Gemini 2.5 Flash
           </p>

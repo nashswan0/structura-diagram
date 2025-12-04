@@ -16,19 +16,33 @@ import AuthButton from '@/components/auth/AuthButton';
 
 const Navbar = () => {
   const navigate = useNavigate();
-  const [isDarkMode, setIsDarkMode] = useState<boolean>(false);
+  const [isDarkMode, setIsDarkMode] = useState<boolean>(() => {
+    // Read from localStorage, default to dark mode
+    const savedTheme = localStorage.getItem('theme');
+    return savedTheme === 'light' ? false : true;
+  });
   const { language, setLanguage, t } = useLanguage();
   const isMobile = useIsMobile();
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
 
   useEffect(() => {
-    const isDark = document.documentElement.classList.contains('dark');
-    setIsDarkMode(isDark);
+    const savedTheme = localStorage.getItem('theme');
+    const shouldBeDark = savedTheme === 'light' ? false : true;
+    
+    if (shouldBeDark) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+    setIsDarkMode(shouldBeDark);
   }, []);
 
   const toggleTheme = () => {
     const newDarkMode = !isDarkMode;
     setIsDarkMode(newDarkMode);
+    
+    // Save to localStorage
+    localStorage.setItem('theme', newDarkMode ? 'dark' : 'light');
     
     if (newDarkMode) {
       document.documentElement.classList.add('dark');
@@ -208,3 +222,4 @@ const Navbar = () => {
 };
 
 export default Navbar;
+

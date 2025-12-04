@@ -26,7 +26,7 @@ export const useTokens = () => {
       // Fetch tokens
       const result: any = await (supabase as any)
         .from('user_tokens')
-        .select('tokens_remaining, last_reset')
+        .select('tokens_remaining')
         .eq('user_id', userId)
         .single();
       
@@ -47,23 +47,37 @@ export const useTokens = () => {
   const consumeToken = async (): Promise<boolean> => {
     if (!user) return false;
 
+    // Store current tokens for potential rollback
+    const previousTokens = tokens;
+
     try {
+      // Optimistic update: immediately decrement tokens in UI
+      setTokens(prev => Math.max(0, prev - 1));
+
       // @ts-ignore - Database types are auto-generated
       const { data, error } = await supabase.rpc('consume_token', {
         user_uuid: user.id,
       });
 
-      if (error) throw error;
+      if (error) {
+        // Rollback optimistic update on error
+        setTokens(previousTokens);
+        throw error;
+      }
 
       if (data) {
-        // Refresh token count
+        // Refresh token count from server to ensure sync
         await fetchTokens(user.id);
         return true;
       }
 
+      // If data is false (no tokens), rollback optimistic update
+      setTokens(previousTokens);
       return false;
     } catch (error) {
       console.error('Error consuming token:', error);
+      // Rollback optimistic update on error
+      setTokens(previousTokens);
       return false;
     }
   };
