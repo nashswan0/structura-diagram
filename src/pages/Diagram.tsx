@@ -285,7 +285,7 @@ const Diagram = () => {
         
         <div className="glass-panel p-4 text-center text-sm text-slate-500 dark:text-slate-400 animate-slide-in" style={{ animationDelay: '200ms' }}>
           <p>
-            Create beautiful diagrams with Mermaid and PlantUML syntax powered by AI assistance. 
+            Create beautiful diagrams powered by AI assistance. 
             Made with precision and care by Structura Diagram.
           </p>
         </div>
