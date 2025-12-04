@@ -12,13 +12,31 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
   const [authenticated, setAuthenticated] = useState(false);
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setAuthenticated(!!session);
-      setLoading(false);
-    });
+    // Check if we have hash fragment (OAuth callback)
+    const hasHashFragment = window.location.hash.includes('access_token');
+    
+    const checkAuth = async () => {
+      try {
+        // If we have hash fragment, give Supabase time to process it
+        if (hasHashFragment) {
+          await new Promise(resolve => setTimeout(resolve, 1000));
+        }
+        
+        const { data: { session } } = await supabase.auth.getSession();
+        setAuthenticated(!!session);
+      } catch (error) {
+        console.error('Auth check error:', error);
+        setAuthenticated(false);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    checkAuth();
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setAuthenticated(!!session);
+      setLoading(false);
     });
 
     return () => subscription.unsubscribe();
