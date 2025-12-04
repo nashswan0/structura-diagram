@@ -37,7 +37,6 @@ serve(async (req) => {
       );
     }
 
-    // 🧠 Prompt sistem yang dioptimalkan untuk kecepatan + kualitas
     const systemPrompt = `
 You are a world-class expert in diagram syntax (Mermaid and PlantUML).
 Your goal is to FIX and IMPROVE broken diagram code based on the provided error message.
@@ -78,7 +77,7 @@ IMPORTANT: The output must be immediately renderable without any modifications.
 `;
 
     // ✅ Fungsi untuk request ke Gemini API (fast optimized)
-    async function requestGemini(prompt: string) {
+    async function requestGemini(userPrompt: string) {
       const response = await fetch(
         `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`,
         {
@@ -87,7 +86,7 @@ IMPORTANT: The output must be immediately renderable without any modifications.
           body: JSON.stringify({
             contents: [
               {
-                parts: [{ text: `${systemPrompt}\n\n${prompt}` }],
+                parts: [{ text: `${systemPrompt}\n\n${userPrompt}` }],
               },
             ],
             generationConfig: {
