@@ -49,59 +49,7 @@ const Editor: React.FC<EditorProps> = ({
   };
 
   const highlight = (code: string) => {
-    // Detect diagram type for appropriate highlighting
-    const isMermaid = !code.trim().startsWith('@startuml');
-    
-    if (isMermaid) {
-      // Mermaid syntax highlighting
-      return code
-        .split('\n')
-        .map(line => {
-          // Keywords
-          line = line.replace(/(graph|flowchart|sequenceDiagram|classDiagram|stateDiagram|erDiagram|gantt|pie|gitGraph|mindmap|timeline|quadrantChart|requirementDiagram|journey)\s+(TD|TB|BT|RL|LR)?/g, 
-            '<span class="token keyword">$1</span> <span class="token operator">$2</span>');
-          
-          // Arrows and operators
-          line = line.replace(/(-->|---|-\.-|==>|==|-\.-\>|--\>|--|-\||\|-|o--o|<--\>|x--x|\|)/g, 
-            '<span class="token operator">$1</span>');
-          
-          // Node IDs and labels
-          line = line.replace(/([A-Za-z0-9_]+)(\[|\(|\{|>|\[\[)/g, 
-            '<span class="token variable">$1</span><span class="token punctuation">$2</span>');
-          
-          // Strings in quotes or brackets
-          line = line.replace(/(\[|\(|\{|>)([^\]\)\}>]+)(\]|\)|\}|>)/g, 
-            '$1<span class="token string">$2</span>$3');
-          
-          // Special characters
-          line = line.replace(/(\||:)/g, '<span class="token punctuation">$1</span>');
-          
-          return line;
-        })
-        .join('\n');
-    } else {
-      // PlantUML syntax highlighting
-      return code
-        .split('\n')
-        .map(line => {
-          // Keywords
-          line = line.replace(/(@startuml|@enduml|participant|actor|boundary|control|entity|database|collections|class|interface|abstract|enum|package|namespace|note|activate|deactivate|alt|else|opt|loop|par|break|critical|group)/g, 
-            '<span class="token keyword">$1</span>');
-          
-          // Arrows
-          line = line.replace(/(->|-->|<-|<--|<->|<-->|\*->|\*-->|o->|o-->)/g, 
-            '<span class="token operator">$1</span>');
-          
-          // Strings
-          line = line.replace(/"([^"]+)"/g, '<span class="token string">"$1"</span>');
-          
-          // Comments
-          line = line.replace(/'([^']+)/g, '<span class="token comment">\'$1</span>');
-          
-          return line;
-        })
-        .join('\n');
-    }
+    return Prism.highlight(code, Prism.languages.javascript, 'javascript');
   };
 
   return (
