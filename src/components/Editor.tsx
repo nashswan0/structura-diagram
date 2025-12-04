@@ -76,13 +76,14 @@ const Editor: React.FC<EditorProps> = ({
           </TabsTrigger>
         </TabsList>
         
-        <TabsContent value="code" className="flex-1 mt-0 h-0 overflow-hidden">
+        <TabsContent value="code" className="flex-1 mt-0 min-h-0 overflow-hidden">
           <div className="h-full overflow-hidden rounded-lg">
             <SimpleCodeEditor
               value={value}
               onValueChange={onChange}
               highlight={highlight}
               padding={16}
+              style={{ minHeight: '300px', height: '100%' }}
               className="code-editor-container h-full"
               textareaClassName="code-editor-textarea"
               preClassName="code-editor-pre"
@@ -90,19 +91,20 @@ const Editor: React.FC<EditorProps> = ({
           </div>
         </TabsContent>
         
-        <TabsContent value="prompt" className="flex-1 mt-0 h-0 overflow-hidden">
+        <TabsContent value="prompt" className="flex-1 mt-0 min-h-0 overflow-hidden">
           <div className="h-full">
             <textarea
               value={promptValue}
               onChange={(e) => onPromptChange(e.target.value)}
               placeholder="Describe the diagram you want to create..."
+              style={{ minHeight: '300px' }}
               className="editor-container h-full resize-none animate-fade-in"
               spellCheck="false"
             />
           </div>
         </TabsContent>
         
-        <TabsContent value="template" className="flex-1 mt-0 h-0 overflow-hidden">
+        <TabsContent value="template" className="flex-1 mt-0 min-h-0 overflow-hidden">
           <div className="h-full p-4">
             <TemplateSelector onSelectTemplate={onChange} />
           </div>
