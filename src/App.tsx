@@ -10,6 +10,7 @@ import Diagram from "./pages/Diagram";
 import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
 import ProtectedRoute from "./components/ProtectedRoute";
+import TokenPurchase from "./pages/TokenPurchase";
 
 const queryClient = new QueryClient();
 
@@ -23,13 +24,21 @@ const App = () => (
           <Routes>
             <Route path="/" element={<Landing />} />
             <Route path="/auth" element={<Auth />} />
-            <Route 
-              path="/diagram" 
+            <Route
+              path="/diagram"
               element={
                 <ProtectedRoute>
                   <Diagram />
                 </ProtectedRoute>
-              } 
+              }
+            />
+            <Route
+              path="/tokens"
+              element={
+                <ProtectedRoute>
+                  <TokenPurchase />
+                </ProtectedRoute>
+              }
             />
             <Route path="*" element={<NotFound />} />
           </Routes>

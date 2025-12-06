@@ -29,7 +29,7 @@ coverage/
 # --- Environment files (keep only examples) ---
 .env
 .env.*
-!.env.example
+.env.example
 
 # --- OS / Editor junk ---
 .DS_Store

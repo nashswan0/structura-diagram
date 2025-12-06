@@ -14,6 +14,9 @@ import {
 } from "@/components/ui/drawer";
 import { useIsMobile } from '@/hooks/use-mobile';
 import AuthButton from '@/components/auth/AuthButton';
+import { useTokens } from '@/hooks/useTokens';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { supabase } from '@/integrations/supabase/client';
 
 const Navbar = () => {
   const navigate = useNavigate();
@@ -25,6 +28,20 @@ const Navbar = () => {
   const { language, setLanguage, t } = useLanguage();
   const isMobile = useIsMobile();
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const { tokens, loading: tokensLoading } = useTokens();
+  const [user, setUser] = useState<any>(null);
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUser(session?.user ?? null);
+    });
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
 
   useEffect(() => {
     const savedTheme = localStorage.getItem('theme');
@@ -56,6 +73,20 @@ const Navbar = () => {
     setLanguage(language === 'EN' ? 'ID' : 'EN');
   };
 
+  const handleNavClick = (sectionId: string) => {
+    // Check if we're on the landing page
+    if (window.location.pathname === '/') {
+      // Already on landing page, just scroll to section
+      const element = document.querySelector(sectionId);
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth' });
+      }
+    } else {
+      // On different page, navigate to landing with hash
+      navigate(`/${sectionId}`);
+    }
+  };
+
   return (
     <nav className="fixed top-0 w-full z-50 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-slate-200/50 dark:border-slate-800/50 animate-fade-in">
       <div className="container mx-auto px-4 md:px-6 py-3 md:py-4">
@@ -74,21 +105,42 @@ const Navbar = () => {
           
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-8">
-            <a href="#home" className="text-sm text-slate-700 dark:text-slate-300 hover:text-primary transition-colors">
+            <button 
+              onClick={() => handleNavClick('#home')} 
+              className="text-sm text-slate-700 dark:text-slate-300 hover:text-primary transition-colors"
+            >
               {t.navbar.home}
-            </a>
-            <a href="#features" className="text-sm text-slate-700 dark:text-slate-300 hover:text-primary transition-colors">
+            </button>
+            <button 
+              onClick={() => handleNavClick('#features')} 
+              className="text-sm text-slate-700 dark:text-slate-300 hover:text-primary transition-colors"
+            >
               {t.navbar.features}
-            </a>
-            <a href="#how-it-works" className="text-sm text-slate-700 dark:text-slate-300 hover:text-primary transition-colors">
+            </button>
+            <button 
+              onClick={() => handleNavClick('#how-it-works')} 
+              className="text-sm text-slate-700 dark:text-slate-300 hover:text-primary transition-colors"
+            >
               {t.navbar.howItWorks}
-            </a>
-            <a href="#faq" className="text-sm text-slate-700 dark:text-slate-300 hover:text-primary transition-colors">
+            </button>
+            <button 
+              onClick={() => handleNavClick('#faq')} 
+              className="text-sm text-slate-700 dark:text-slate-300 hover:text-primary transition-colors"
+            >
               FAQ
-            </a>
-            <a href="#contact" className="text-sm text-slate-700 dark:text-slate-300 hover:text-primary transition-colors">
+            </button>
+            <button 
+              onClick={() => handleNavClick('#contact')} 
+              className="text-sm text-slate-700 dark:text-slate-300 hover:text-primary transition-colors"
+            >
               Contact
-            </a>
+            </button>
+            <button 
+              onClick={() => navigate('/tokens')} 
+              className="text-sm font-semibold text-slate-700 dark:text-slate-300 hover:text-primary transition-colors"
+            >
+              {language === 'EN' ? 'Buy Tokens' : 'Beli Token'}
+            </button>
           </div>
           
           {/* Right Side Actions */}
@@ -143,49 +195,70 @@ const Navbar = () => {
                 <div className="p-4 space-y-3">
                   {/* Navigation Links */}
                   <DrawerClose asChild>
-                    <a 
-                      href="#home" 
-                      className="block py-3 px-4 text-base rounded-lg hover:bg-accent transition-colors"
-                      onClick={() => setIsDrawerOpen(false)}
+                    <button 
+                      onClick={() => {
+                        setIsDrawerOpen(false);
+                        handleNavClick('#home');
+                      }}
+                      className="block w-full text-left py-3 px-4 text-base rounded-lg hover:bg-accent transition-colors"
                     >
                       {t.navbar.home}
-                    </a>
+                    </button>
                   </DrawerClose>
                   <DrawerClose asChild>
-                    <a 
-                      href="#features" 
-                      className="block py-3 px-4 text-base rounded-lg hover:bg-accent transition-colors"
-                      onClick={() => setIsDrawerOpen(false)}
+                    <button 
+                      onClick={() => {
+                        setIsDrawerOpen(false);
+                        handleNavClick('#features');
+                      }}
+                      className="block w-full text-left py-3 px-4 text-base rounded-lg hover:bg-accent transition-colors"
                     >
                       {t.navbar.features}
-                    </a>
+                    </button>
                   </DrawerClose>
                   <DrawerClose asChild>
-                    <a 
-                      href="#how-it-works" 
-                      className="block py-3 px-4 text-base rounded-lg hover:bg-accent transition-colors"
-                      onClick={() => setIsDrawerOpen(false)}
+                    <button 
+                      onClick={() => {
+                        setIsDrawerOpen(false);
+                        handleNavClick('#how-it-works');
+                      }}
+                      className="block w-full text-left py-3 px-4 text-base rounded-lg hover:bg-accent transition-colors"
                     >
                       {t.navbar.howItWorks}
-                    </a>
+                    </button>
                   </DrawerClose>
                   <DrawerClose asChild>
-                    <a 
-                      href="#faq" 
-                      className="block py-3 px-4 text-base rounded-lg hover:bg-accent transition-colors"
-                      onClick={() => setIsDrawerOpen(false)}
+                    <button 
+                      onClick={() => {
+                        setIsDrawerOpen(false);
+                        handleNavClick('#faq');
+                      }}
+                      className="block w-full text-left py-3 px-4 text-base rounded-lg hover:bg-accent transition-colors"
                     >
                       FAQ
-                    </a>
+                    </button>
                   </DrawerClose>
                   <DrawerClose asChild>
-                    <a 
-                      href="#contact" 
-                      className="block py-3 px-4 text-base rounded-lg hover:bg-accent transition-colors"
-                      onClick={() => setIsDrawerOpen(false)}
+                    <button 
+                      onClick={() => {
+                        setIsDrawerOpen(false);
+                        handleNavClick('#contact');
+                      }}
+                      className="block w-full text-left py-3 px-4 text-base rounded-lg hover:bg-accent transition-colors"
                     >
                       Contact
-                    </a>
+                    </button>
+                  </DrawerClose>
+                  <DrawerClose asChild>
+                    <button 
+                      onClick={() => {
+                        setIsDrawerOpen(false);
+                        navigate('/tokens');
+                      }}
+                      className="block w-full text-left py-3 px-4 text-base rounded-lg hover:bg-accent transition-colors font-semibold"
+                    >
+                      {language === 'EN' ? 'Buy Tokens' : 'Beli Token'}
+                    </button>
                   </DrawerClose>
                   
                   {/* Mobile Controls */}

@@ -14,7 +14,8 @@ function jsonResponse(body: Record<string, unknown>, status = 200) {
 }
 
 serve(async (req) => {
-  if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
+  if (req.method === "OPTIONS")
+    return new Response(null, { headers: corsHeaders });
 
   try {
     const { prompt } = await req.json();
@@ -23,7 +24,10 @@ serve(async (req) => {
     const GEMINI_API_KEY = Deno.env.get("GEMINI_API_KEY");
     if (!GEMINI_API_KEY) {
       console.error("❌ Missing GEMINI_API_KEY");
-      return jsonResponse({ error: "Server misconfiguration: missing API key" }, 500);
+      return jsonResponse(
+        { error: "Server misconfiguration: missing API key" },
+        500
+      );
     }
 
     // 🧠 System Prompt — versi paling lengkap, dengan fokus pada kecepatan + kelengkapan output
@@ -57,6 +61,15 @@ Your mission is to generate a fully valid, complete, and immediately renderable 
 - Make sure to use the correct shape for each node.
 - Final output must be 100% valid and renderable without edits.
 
+- Mermaid Safety Rule:
+  • Any label that contains parentheses (), slash /, colon :, dash -, ampersand &, comma ,, or other special characters MUST always be wrapped in double quotes.
+    Example: A["Verifikasi OTP (Email/SMS)"]
+  • NEVER place special characters directly inside a Mermaid node label without quotes. Doing so causes Mermaid parse errors.
+  • When a decision node is used in Mermaid (e.g., A{...}), and the content contains any special characters, AUTO-CONVERT it into a quoted label version:
+      A{"Verifikasi OTP (Email/SMS)"}
+  • Always validate all Mermaid labels and auto-add quotes if missing.
+  • Prevent collisions between Mermaid syntax characters and text labels by quoting any label that is not plain alphanumeric.
+
 🚀 Performance Optimization:
 - Use concise variable names when possible.
 - Keep the diagram well-structured but avoid redundant nodes.
@@ -76,15 +89,15 @@ Now generate the most accurate diagram possible for the user's request.
         body: JSON.stringify({
           contents: [{ parts: [{ text: `${systemPrompt}\n\n${userPrompt}` }] }],
           generationConfig: {
-            temperature: 0.7,           
+            temperature: 0.7,
             topP: 0.95,
             topK: 50,
             candidateCount: 1,
-            maxOutputTokens: 8192,      
+            maxOutputTokens: 8192,
             responseMimeType: "text/plain",
           },
         }),
-      },
+      }
     );
 
     if (!geminiResponse.ok) {
@@ -92,9 +105,15 @@ Now generate the most accurate diagram possible for the user's request.
       console.error("❌ Gemini API error:", geminiResponse.status, errorText);
 
       if (geminiResponse.status === 429)
-        return jsonResponse({ error: "Rate limit exceeded. Please try again later." }, 429);
+        return jsonResponse(
+          { error: "Rate limit exceeded. Please try again later." },
+          429
+        );
       if (geminiResponse.status === 503)
-        return jsonResponse({ error: "Gemini model overloaded. Please retry shortly." }, 503);
+        return jsonResponse(
+          { error: "Gemini model overloaded. Please retry shortly." },
+          503
+        );
 
       return jsonResponse({ error: "Failed to connect to Gemini API" }, 500);
     }
@@ -105,7 +124,9 @@ Now generate the most accurate diagram possible for the user's request.
     // Check for MAX_TOKENS finish reason - but still return partial response
     const finishReason = data?.candidates?.[0]?.finishReason;
     if (finishReason === "MAX_TOKENS") {
-      console.warn("⚠️ Gemini response exceeded MAX_TOKENS limit, returning partial response");
+      console.warn(
+        "⚠️ Gemini response exceeded MAX_TOKENS limit, returning partial response"
+      );
     }
 
     const generatedText =
@@ -148,7 +169,7 @@ Now generate the most accurate diagram possible for the user's request.
     console.error("🔥 Error in generate-diagram function:", err);
     return jsonResponse(
       { error: err instanceof Error ? err.message : "Unknown internal error" },
-      500,
+      500
     );
   }
 });
