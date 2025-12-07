@@ -93,13 +93,13 @@ const Navbar = () => {
 
         <div className="flex items-center justify-between">
           {/* Logo */}
-          <div className="flex items-center space-x-1.5 md:space-x-2">
+          <div className="flex items-center space-x-1.5 md:space-x-2 max-w-[60%] md:max-w-none">
             <img 
               src={structuraLogo} 
               alt="Structura Logo" 
-              className="h-8 w-8 md:h-10 md:w-10 object-contain"
+              className="h-8 w-8 md:h-10 md:w-10 object-contain flex-shrink-0"
             />
-            <span className="text-base md:text-2xl font-display font-bold bg-gradient-primary bg-clip-text text-transparent">
+            <span className="text-base md:text-2xl font-display font-bold bg-gradient-primary bg-clip-text text-transparent truncate">
               Structura Diagram
             </span>
           </div>
