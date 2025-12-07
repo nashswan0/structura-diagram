@@ -22,7 +22,6 @@ export default defineConfig(({ mode }) => ({
       }
     }
   },
-  assetsInclude: ['**/*.html'],
   plugins: [
     react(),
     mode === 'development' &&
