@@ -137,11 +137,22 @@ export async function tripayRequest<T>(
   if (method === 'POST' && body) {
     headers['Content-Type'] = 'application/x-www-form-urlencoded';
     
-    // Serialize body with proper handling for arrays and objects
+    // Serialize body with proper handling for arrays (TriPay format)
     const formData = new URLSearchParams();
     for (const [key, value] of Object.entries(body)) {
-      if (Array.isArray(value) || typeof value === 'object') {
-        // JSON stringify arrays and objects
+      if (Array.isArray(value)) {
+        // Serialize arrays with indexed notation: key[0][field]
+        value.forEach((item, index) => {
+          if (typeof item === 'object' && item !== null) {
+            for (const [field, fieldValue] of Object.entries(item)) {
+              formData.append(`${key}[${index}][${field}]`, String(fieldValue));
+            }
+          } else {
+            formData.append(`${key}[${index}]`, String(item));
+          }
+        });
+      } else if (typeof value === 'object' && value !== null) {
+        // JSON stringify objects
         formData.append(key, JSON.stringify(value));
       } else {
         formData.append(key, String(value));
