@@ -23,19 +23,14 @@
 ### 🤖 AI-Powered Generation
 - **Google Gemini Integration** - Advanced AI for intelligent diagram creation
 - **Natural Language Processing** - Describe your diagram in plain text
-- **Smart Suggestions** - AI-powered recommendations for better diagrams
+- **Smart Suggestions** - Some recommendations for better diagrams
 
-### 💳 Integrated Payment System
-- **TriPay Integration** - Secure payment processing
-- **QRIS Support** - Quick Response Code Indonesian Standard
-- **Token-based System** - Purchase tokens to generate diagrams
-- **Automatic Fulfillment** - Instant token delivery after payment
+### 💳 Integrated Payment System (Not Implemented Yet)
+- **TriPay Integration** 
 
 ### 🎨 Rich Diagram Features
-- **Multiple Diagram Types** - Flowcharts, mind maps, and more
+- **Multiple Diagram Types** - Flowcharts, mind maps, and many more
 - **Real-time Preview** - See changes as you work
-- **Export Options** - Download in various formats
-- **Customization** - Colors, styles, and layouts
 
 ### 🌐 Modern Tech Stack
 - **React 18** - Latest React features with TypeScript
@@ -132,6 +127,7 @@ The project uses Supabase with the following tables:
 - `profiles` - User profiles
 - `transactions` - Payment transactions
 - `user_tokens` - Token balances
+- `user_roles` - User roles
 
 Run migrations to set up the database:
 
@@ -149,47 +145,6 @@ TriPay is integrated for payment processing. To enable:
 4. Configure callback URL in TriPay dashboard
 
 For production deployment, see [Production Migration Guide](./docs/production-migration.md).
-
----
-
-## 🌍 Deployment
-
-### Deploy to Vercel
-
-1. **Push to GitHub**
-   ```bash
-   git push origin main
-   ```
-
-2. **Import to Vercel**
-   - Go to [Vercel Dashboard](https://vercel.com)
-   - Import your repository
-   - Configure environment variables
-   - Deploy!
-
-3. **Set up environment variables in Vercel**
-   - Add all variables from `.env.local`
-   - Add `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` for API functions
-
-### Environment Variables for Production
-
-Required variables in Vercel:
-
-```bash
-# Frontend
-VITE_SUPABASE_URL
-VITE_SUPABASE_ANON_KEY
-VITE_GEMINI_API_KEY
-VITE_TRIPAY_API_KEY
-VITE_TRIPAY_PRIVATE_KEY
-VITE_TRIPAY_MERCHANT_CODE
-VITE_TRIPAY_MODE
-VITE_TRIPAY_API_URL
-
-# Backend (API Functions)
-SUPABASE_URL
-SUPABASE_SERVICE_ROLE_KEY
-```
 
 ---
 
@@ -226,14 +181,15 @@ SUPABASE_SERVICE_ROLE_KEY
 - Protected routes
 
 #### 💰 Token System
-- Purchase tokens via QRIS
+- Free 10 tokens for new users
+- Purchase tokens via QRIS (Not implemented yet)
 - Automatic token delivery
 - Real-time balance updates
 
 #### 🎨 Diagram Generation
 - AI-powered suggestions
 - Multiple diagram types
-- Export capabilities
+- Export as high quality PNG
 
 ### API Endpoints
 
