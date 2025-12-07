@@ -1,5 +1,5 @@
 import { defineConfig } from "vite";
-import react from "@vitejs/plugin-react-swc";
+import react from "@vitejs/plugin-react";
 import path from "path";
 import { componentTagger } from "lovable-tagger";
 
@@ -8,7 +8,20 @@ export default defineConfig(({ mode }) => ({
   server: {
     host: "::",
     port: 8080,
+    allowedHosts: [
+      '.ngrok-free.dev',
+      '.ngrok.io',
+      'localhost',
+    ],
+    proxy: {
+      '/api': {
+        target: 'https://structura-diagram.vercel.app',
+        changeOrigin: true,
+        secure: true,
+      }
+    }
   },
+  assetsInclude: ['**/*.html'],
   plugins: [
     react(),
     mode === 'development' &&

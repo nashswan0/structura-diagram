@@ -121,7 +121,7 @@ const TokenPurchase = () => {
                 variant: 'destructive',
                 duration: 3000,
             });
-            navigate('/login');
+            navigate('/auth');
             return;
         }
 

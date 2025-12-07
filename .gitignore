@@ -53,3 +53,5 @@ supabase/config.toml
 *.swp
 *.swo
 *.local
+.vercel
+.env*.local
