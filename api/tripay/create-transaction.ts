@@ -8,10 +8,10 @@ import {
   tripayRequest,
 } from '../../src/lib/tripay.js';
 
-// Initialize Supabase client
+// Initialize Supabase client with service role for backend operations
 const supabase = createClient(
-  process.env.VITE_SUPABASE_URL || '',
-  process.env.VITE_SUPABASE_ANON_KEY || ''
+  process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || '',
+  process.env.SUPABASE_SERVICE_ROLE_KEY || ''
 );
 
 interface CreateTransactionRequest {

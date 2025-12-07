@@ -4,8 +4,8 @@ import { validateCallbackSignature } from '../../src/lib/tripay.js';
 
 // Initialize Supabase client with service role key for admin operations
 const supabase = createClient(
-  process.env.VITE_SUPABASE_URL || '',
-  process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.VITE_SUPABASE_ANON_KEY || ''
+  process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || '',
+  process.env.SUPABASE_SERVICE_ROLE_KEY || ''
 );
 
 interface TripayCallbackPayload {
