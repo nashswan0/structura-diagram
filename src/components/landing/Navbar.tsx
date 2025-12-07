@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { useNavigate } from 'react-router-dom';
-import { Moon, Sun, Menu } from 'lucide-react';
+import { Moon, Sun, Menu, Lock } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import structuraLogo from '@/assets/structura-logo.png';
 import {
@@ -17,6 +17,8 @@ import AuthButton from '@/components/auth/AuthButton';
 import { useTokens } from '@/hooks/useTokens';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { supabase } from '@/integrations/supabase/client';
+import { toast } from '@/hooks/use-toast';
+
 
 const Navbar = () => {
   const navigate = useNavigate();
@@ -87,6 +89,16 @@ const Navbar = () => {
     }
   };
 
+  const handleComingSoon = () => {
+    toast({
+      title: language === 'EN' ? '🔒 Coming Soon!' : '🔒 Segera Hadir!',
+      description: language === 'EN' 
+        ? 'Token purchase feature is currently under development. Stay tuned!' 
+        : 'Fitur pembelian token sedang dalam pengembangan. Nantikan!',
+      duration: 4000,
+    });
+  };
+
   return (
     <nav className="fixed top-0 w-full z-50 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-slate-200/50 dark:border-slate-800/50 animate-fade-in">
       <div className="w-full max-w-screen-2xl mx-auto px-4 md:px-6 py-3 md:py-4">
@@ -137,9 +149,10 @@ const Navbar = () => {
               Contact
             </button>
             <button 
-              onClick={() => navigate('/tokens')} 
-              className="text-sm font-semibold text-slate-700 dark:text-slate-300 hover:text-primary transition-colors"
+              onClick={handleComingSoon}
+              className="text-sm font-semibold text-slate-700 dark:text-slate-300 hover:text-primary transition-colors flex items-center gap-1.5"
             >
+              <Lock size={14} />
               {language === 'EN' ? 'Buy Tokens' : 'Beli Token'}
             </button>
           </div>
@@ -254,10 +267,11 @@ const Navbar = () => {
                     <button 
                       onClick={() => {
                         setIsDrawerOpen(false);
-                        navigate('/tokens');
+                        handleComingSoon();
                       }}
-                      className="block w-full text-left py-3 px-4 text-base rounded-lg hover:bg-accent transition-colors font-semibold"
+                      className="w-full text-left py-3 px-4 text-base rounded-lg hover:bg-accent transition-colors font-semibold flex items-center gap-2"
                     >
+                      <Lock size={16} />
                       {language === 'EN' ? 'Buy Tokens' : 'Beli Token'}
                     </button>
                   </DrawerClose>
