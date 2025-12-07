@@ -1,12 +1,9 @@
 
-import React, { useEffect, useRef } from 'react';
+import React, { useCallback, useMemo, useRef, useEffect } from 'react';
 import { cn } from '@/lib/utils';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import SimpleCodeEditor from 'react-simple-code-editor';
-import Prism from 'prismjs';
-import 'prismjs/components/prism-javascript';
-import 'prismjs/themes/prism-tomorrow.css';
 import TemplateSelector from './TemplateSelector';
+import '../styles/code-editor.css';
 
 interface EditorProps {
   value: string;
@@ -16,23 +13,61 @@ interface EditorProps {
   onPromptChange: (value: string) => void;
 }
 
-const Editor: React.FC<EditorProps> = ({
-  value,
-  onChange,
-  className,
-  promptValue,
-  onPromptChange
-}) => {
-  const editorRef = useRef<HTMLTextAreaElement>(null);
+// Mermaid syntax highlighting
+const highlightMermaid = (code: string): string => {
+  // Keywords
+  const keywords = /\b(graph|flowchart|sequenceDiagram|classDiagram|stateDiagram|erDiagram|journey|gantt|pie|gitGraph|mindmap|timeline|TD|TB|BT|RL|LR|subgraph|end|participant|actor|loop|alt|else|opt|par|and|critical|break|note|over|of|left|right|activate|deactivate|title|section|dateFormat|axisFormat|class|style|linkStyle)\b/g;
+  
+  // Arrows and connections
+  const arrows = /(-->|---|\|>|<\||--o|o--|--x|x--|==|==>|-.->|-.-|<-->)/g;
+  
+  // Node IDs and labels in brackets
+  const nodeLabels = /(\[.*?\]|\(.*?\)|\{.*?\}|\[\[.*?\]\]|\(\(.*?\)\)|\{\{.*?\}\})/g;
+  
+  // Strings in quotes
+  const strings = /("[^"]*"|'[^']*')/g;
+  
+  // Comments
+  const comments = /(%%.*$)/gm;
+  
+  let highlighted = code
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
+  
+  highlighted = highlighted
+    .replace(comments, '<span class="token-comment">$1</span>')
+    .replace(strings, '<span class="token-string">$1</span>')
+    .replace(keywords, '<span class="token-keyword">$1</span>')
+    .replace(arrows, '<span class="token-arrow">$1</span>')
+    .replace(nodeLabels, '<span class="token-node">$1</span>');
+  
+  return highlighted;
+};
 
-  useEffect(() => {
-    if (editorRef.current) {
-      editorRef.current.style.height = 'auto';
-      editorRef.current.style.height = `${editorRef.current.scrollHeight}px`;
+const CodeEditorWithLineNumbers: React.FC<{
+  value: string;
+  onChange: (value: string) => void;
+  minHeight?: string;
+}> = ({ value, onChange, minHeight = '300px' }) => {
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const preRef = useRef<HTMLPreElement>(null);
+  const lineNumbersRef = useRef<HTMLDivElement>(null);
+
+  const lines = useMemo(() => value.split('\n'), [value]);
+  const lineCount = lines.length;
+
+  // Sync scroll between textarea, pre, and line numbers
+  const handleScroll = useCallback(() => {
+    if (textareaRef.current && preRef.current && lineNumbersRef.current) {
+      preRef.current.scrollTop = textareaRef.current.scrollTop;
+      preRef.current.scrollLeft = textareaRef.current.scrollLeft;
+      lineNumbersRef.current.scrollTop = textareaRef.current.scrollTop;
     }
-  }, [value]);
+  }, []);
 
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+  // Handle tab key
+  const handleKeyDown = useCallback((e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === 'Tab') {
       e.preventDefault();
       const start = e.currentTarget.selectionStart;
@@ -40,18 +75,78 @@ const Editor: React.FC<EditorProps> = ({
       const newValue = value.substring(0, start) + '  ' + value.substring(end);
       onChange(newValue);
       
+      // Set cursor position after tab
       setTimeout(() => {
-        if (editorRef.current) {
-          editorRef.current.selectionStart = editorRef.current.selectionEnd = start + 2;
+        if (textareaRef.current) {
+          textareaRef.current.selectionStart = textareaRef.current.selectionEnd = start + 2;
         }
       }, 0);
     }
-  };
+  }, [value, onChange]);
 
-  const highlight = (code: string) => {
-    return Prism.highlight(code, Prism.languages.javascript, 'javascript');
-  };
+  // Auto-resize and sync
+  useEffect(() => {
+    if (textareaRef.current && preRef.current) {
+      preRef.current.scrollTop = textareaRef.current.scrollTop;
+      preRef.current.scrollLeft = textareaRef.current.scrollLeft;
+    }
+  }, [value]);
 
+  const highlightedCode = useMemo(() => highlightMermaid(value), [value]);
+
+  return (
+    <div 
+      className="code-editor-wrapper"
+      style={{ minHeight }}
+    >
+      {/* Line Numbers */}
+      <div 
+        ref={lineNumbersRef}
+        className="code-line-numbers"
+      >
+        {Array.from({ length: lineCount }, (_, i) => (
+          <div key={i + 1} className="code-line-number">
+            {i + 1}
+          </div>
+        ))}
+      </div>
+      
+      {/* Code Area */}
+      <div className="code-editor-area">
+        {/* Highlighted code (visible) */}
+        <pre
+          ref={preRef}
+          className="code-highlight"
+          aria-hidden="true"
+          dangerouslySetInnerHTML={{ __html: highlightedCode + '\n' }}
+        />
+        
+        {/* Textarea (invisible but interactive) */}
+        <textarea
+          ref={textareaRef}
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          onScroll={handleScroll}
+          onKeyDown={handleKeyDown}
+          className="code-textarea"
+          spellCheck="false"
+          autoCapitalize="off"
+          autoComplete="off"
+          autoCorrect="off"
+          data-gramm="false"
+        />
+      </div>
+    </div>
+  );
+};
+
+const Editor: React.FC<EditorProps> = ({
+  value,
+  onChange,
+  className,
+  promptValue,
+  onPromptChange
+}) => {
   return (
     <div className={cn("h-full flex flex-col", className)}>
       <Tabs defaultValue="code" className="h-full flex flex-col">
@@ -78,15 +173,10 @@ const Editor: React.FC<EditorProps> = ({
         
         <TabsContent value="code" className="flex-1 mt-0 min-h-0 overflow-hidden">
           <div className="h-full overflow-hidden rounded-lg">
-            <SimpleCodeEditor
+            <CodeEditorWithLineNumbers
               value={value}
-              onValueChange={onChange}
-              highlight={highlight}
-              padding={16}
-              style={{ minHeight: '300px', height: '100%' }}
-              className="code-editor-container h-full"
-              textareaClassName="code-editor-textarea"
-              preClassName="code-editor-pre"
+              onChange={onChange}
+              minHeight="300px"
             />
           </div>
         </TabsContent>

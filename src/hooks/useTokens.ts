@@ -131,11 +131,14 @@ export const useTokens = () => {
     };
   }, [user]);
 
+  const refreshTokens = user ? () => fetchTokens(user.id) : () => {};
+
   return {
     tokens,
     loading,
     consumeToken,
-    refreshTokens: user ? () => fetchTokens(user.id) : () => {},
+    refreshTokens,
+    refetch: refreshTokens, // Alias for consistency
     isAdmin,
   };
 };
