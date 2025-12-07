@@ -1,6 +1,6 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { createClient } from '@supabase/supabase-js';
-import { validateCallbackSignature } from '../../src/lib/tripay';
+import { validateCallbackSignature } from '../../src/lib/tripay.js';
 
 // Initialize Supabase client with service role key for admin operations
 const supabase = createClient(

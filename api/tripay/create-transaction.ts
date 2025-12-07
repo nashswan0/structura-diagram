@@ -6,7 +6,7 @@ import {
   generateMerchantRef,
   generateTransactionSignature,
   tripayRequest,
-} from '../../src/lib/tripay';
+} from '../../src/lib/tripay.js';
 
 // Initialize Supabase client
 const supabase = createClient(
