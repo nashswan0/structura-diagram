@@ -89,7 +89,8 @@ const Navbar = () => {
 
   return (
     <nav className="fixed top-0 w-full z-50 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-slate-200/50 dark:border-slate-800/50 animate-fade-in">
-      <div className="container mx-auto px-4 md:px-6 py-3 md:py-4">
+      <div className="w-full max-w-screen-2xl mx-auto px-4 md:px-6 py-3 md:py-4">
+
         <div className="flex items-center justify-between">
           {/* Logo */}
           <div className="flex items-center space-x-1.5 md:space-x-2">
