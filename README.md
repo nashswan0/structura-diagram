@@ -24,127 +24,14 @@
 - **Google Gemini Integration** - Advanced AI for intelligent diagram creation
 - **Natural Language Processing** - Describe your diagram in plain text
 - **Smart Suggestions** - Some recommendations for better diagrams
+- **Diagram Error Handling** - AI will try to fix the diagram if it's not valid
 
 ### 💳 Integrated Payment System (Not Implemented Yet)
 - **TriPay Integration** 
 
 ### 🎨 Rich Diagram Features
-- **Multiple Diagram Types** - Flowcharts, mind maps, and many more
+- **Multiple Diagram Types** - UML, flowcharts, ERD, mind maps, and many more
 - **Real-time Preview** - See changes as you work
-
-### 🌐 Modern Tech Stack
-- **React 18** - Latest React features with TypeScript
-- **Vite** - Lightning-fast build tool
-- **Supabase** - Backend as a Service with PostgreSQL
-- **Tailwind CSS** - Utility-first CSS framework
-- **shadcn/ui** - Beautiful, accessible components
-
----
-
-## 🚀 Quick Start
-
-### Prerequisites
-
-- Node.js 18+ 
-- npm or yarn
-- Supabase account
-- Google Gemini API key
-
-### Installation
-
-1. **Clone the repository**
-   ```bash
-   git clone https://github.com/nashswan0/structura-diagram.git
-   cd structura-diagram
-   ```
-
-2. **Install dependencies**
-   ```bash
-   npm install
-   ```
-
-3. **Set up environment variables**
-   
-   Create `.env.local` file:
-   ```bash
-   # Supabase
-   VITE_SUPABASE_URL=your_supabase_url
-   VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
-   
-   # Google Gemini
-   VITE_GEMINI_API_KEY=your_gemini_api_key
-   
-   # TriPay (for payment integration)
-   VITE_TRIPAY_API_KEY=your_tripay_api_key
-   VITE_TRIPAY_PRIVATE_KEY=your_tripay_private_key
-   VITE_TRIPAY_MERCHANT_CODE=your_merchant_code
-   VITE_TRIPAY_MODE=sandbox
-   VITE_TRIPAY_API_URL=https://tripay.co.id/api-sandbox
-   ```
-
-4. **Run database migrations**
-   ```bash
-   npx supabase db push
-   ```
-
-5. **Start development server**
-   ```bash
-   npm run dev
-   ```
-
-6. **Open your browser**
-   ```
-   http://localhost:8080
-   ```
-
----
-
-## 📁 Project Structure
-
-```
-structura-diagram/
-├── api/                    # Serverless API functions
-│   └── tripay/            # Payment processing endpoints
-├── src/
-│   ├── components/        # React components
-│   ├── contexts/          # React contexts (Auth, Language)
-│   ├── lib/              # Utility functions
-│   ├── pages/            # Page components
-│   └── main.tsx          # Application entry point
-├── supabase/
-│   └── migrations/       # Database migrations
-└── public/               # Static assets
-```
-
----
-
-## 🔧 Configuration
-
-### Database Setup
-
-The project uses Supabase with the following tables:
-
-- `profiles` - User profiles
-- `transactions` - Payment transactions
-- `user_tokens` - Token balances
-- `user_roles` - User roles
-
-Run migrations to set up the database:
-
-```bash
-npx supabase db push
-```
-
-### Payment Integration
-
-TriPay is integrated for payment processing. To enable:
-
-1. Register at [TriPay](https://tripay.co.id)
-2. Get your API credentials
-3. Update environment variables
-4. Configure callback URL in TriPay dashboard
-
-For production deployment, see [Production Migration Guide](./docs/production-migration.md).
 
 ---
 
@@ -165,7 +52,7 @@ For production deployment, see [Production Migration Guide](./docs/production-mi
 - **PostgreSQL** - Database
 
 ### Integrations
-- **Google Gemini** - AI diagram generation
+- **Google Gemini 2.5 Flash** - AI diagram generation
 - **TriPay** - Payment processing
 - **Supabase Auth** - Authentication
 
@@ -190,13 +77,6 @@ For production deployment, see [Production Migration Guide](./docs/production-mi
 - AI-powered suggestions
 - Multiple diagram types
 - Export as high quality PNG
-
-### API Endpoints
-
-#### Payment APIs
-- `POST /api/tripay/create-transaction` - Create payment transaction
-- `POST /api/tripay/callback` - Handle payment callbacks
-- `GET /api/tripay/transaction-status` - Check transaction status
 
 ---
 
