@@ -136,7 +136,18 @@ export async function tripayRequest<T>(
 
   if (method === 'POST' && body) {
     headers['Content-Type'] = 'application/x-www-form-urlencoded';
-    options.body = new URLSearchParams(body).toString();
+    
+    // Serialize body with proper handling for arrays and objects
+    const formData = new URLSearchParams();
+    for (const [key, value] of Object.entries(body)) {
+      if (Array.isArray(value) || typeof value === 'object') {
+        // JSON stringify arrays and objects
+        formData.append(key, JSON.stringify(value));
+      } else {
+        formData.append(key, String(value));
+      }
+    }
+    options.body = formData.toString();
   }
 
   const response = await fetch(url, options);
