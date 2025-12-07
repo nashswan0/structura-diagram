@@ -7,7 +7,7 @@ import { Progress } from '@/components/ui/progress';
 import { useTokens } from '@/hooks/useTokens';
 import { useTransaction } from '@/hooks/useTransaction';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { ArrowLeft, Sparkles, Zap, Crown, Rocket, Star } from 'lucide-react';
+import { ArrowLeft, Coins } from 'lucide-react';
 import Navbar from '@/components/landing/Navbar';
 import ParticleBackground from '@/components/ParticleBackground';
 import QRISModal from '@/components/QRISModal';
@@ -59,7 +59,7 @@ const TokenPurchase = () => {
             price: 5000,
             description: 'Perfect for light users or students trying Structura AI for the first time.',
             descriptionId: 'Sempurna untuk pengguna ringan atau pelajar yang mencoba Structura AI.',
-            icon: <Sparkles className="w-8 h-8" />,
+            icon: <Coins className="w-8 h-8 text-yellow-500" />,
             gradient: 'from-blue-500 to-cyan-500'
         },
         {
@@ -70,7 +70,7 @@ const TokenPurchase = () => {
             price: 10000,
             description: 'Ideal for learners or small projects with balanced value.',
             descriptionId: 'Ideal untuk pembelajar atau proyek kecil dengan nilai seimbang.',
-            icon: <Star className="w-8 h-8" />,
+            icon: <Coins className="w-8 h-8 text-yellow-500" />,
             gradient: 'from-purple-500 to-pink-500'
         },
         {
@@ -81,7 +81,7 @@ const TokenPurchase = () => {
             price: 20000,
             description: 'Best for developers, students, and creators who need consistent usage.',
             descriptionId: 'Terbaik untuk developer, pelajar, dan kreator yang butuh penggunaan konsisten.',
-            icon: <Zap className="w-8 h-8" />,
+            icon: <Coins className="w-8 h-8 text-yellow-500" />,
             popular: true,
             gradient: 'from-violet-500 to-purple-500'
         },
@@ -93,7 +93,7 @@ const TokenPurchase = () => {
             price: 25000,
             description: 'Designed for productivity power users and teams.',
             descriptionId: 'Dirancang untuk power user produktivitas dan tim.',
-            icon: <Crown className="w-8 h-8" />,
+            icon: <Coins className="w-8 h-8 text-yellow-500" />,
             gradient: 'from-amber-500 to-orange-500'
         },
         {
@@ -104,7 +104,7 @@ const TokenPurchase = () => {
             price: 40000,
             description: 'For professionals and educators with heavy workloads.',
             descriptionId: 'Untuk profesional dan pendidik dengan beban kerja berat.',
-            icon: <Rocket className="w-8 h-8" />,
+            icon: <Coins className="w-8 h-8 text-yellow-500" />,
             bestValue: true,
             gradient: 'from-pink-500 to-rose-500'
         }

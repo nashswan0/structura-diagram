@@ -83,7 +83,7 @@ const AuthButton: React.FC<AuthButtonProps> = ({ onLoginClick, variant = 'defaul
           <DropdownMenuLabel className="font-normal">
             <div className="flex items-center justify-between">
               <span className="text-sm font-medium">
-                Tokens: {isAdmin ? '∞' : `${tokens}/10`}
+                Tokens: {isAdmin ? '∞' : tokens}
               </span>
               <Popover>
                 <PopoverTrigger asChild>
