@@ -1,6 +1,7 @@
 import React from 'react';
 import { Github, Linkedin, Instagram, Mail } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
+import structuraLogo from '@/assets/structura-logo.png';
 
 const Footer = () => {
   const { t } = useLanguage();
@@ -11,9 +12,11 @@ const Footer = () => {
         <div className="grid md:grid-cols-3 gap-8 mb-8">
           <div>
             <div className="flex items-center space-x-2 mb-4">
-              <div className="h-10 w-10 rounded-lg bg-gradient-primary flex items-center justify-center">
-                <span className="text-white font-bold text-xl">S</span>
-              </div>
+              <img 
+                src={structuraLogo} 
+                alt="Structura Logo" 
+                className="h-10 w-10 object-contain"
+              />
               <span className="text-xl font-display font-bold">Structura Diagram</span>
             </div>
             <p className="text-slate-400">
