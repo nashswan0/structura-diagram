@@ -6,6 +6,8 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { toast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
 import ParticleBackground from '@/components/ParticleBackground';
+import structuraLogo from '@/assets/structura-logo.png';
+
 
 const Auth = () => {
   const navigate = useNavigate();
@@ -69,9 +71,11 @@ const Auth = () => {
         <div className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl rounded-2xl shadow-2xl p-8 border border-border/50">
           {/* Logo */}
           <div className="flex justify-center mb-8">
-            <div className="h-16 w-16 rounded-xl bg-gradient-primary flex items-center justify-center shadow-lg">
-              <span className="text-white font-bold text-3xl">S</span>
-            </div>
+            <img 
+              src={structuraLogo} 
+              alt="Structura Logo" 
+              className="h-16 w-16 object-contain"
+            />
           </div>
 
           {/* Title */}
