@@ -52,17 +52,15 @@ const CodeEditorWithLineNumbers: React.FC<{
 }> = ({ value, onChange, minHeight = '300px' }) => {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const preRef = useRef<HTMLPreElement>(null);
-  const lineNumbersRef = useRef<HTMLDivElement>(null);
 
   const lines = useMemo(() => value.split('\n'), [value]);
   const lineCount = lines.length;
 
-  // Sync scroll between textarea, pre, and line numbers
+  // Sync scroll between textarea and pre
   const handleScroll = useCallback(() => {
-    if (textareaRef.current && preRef.current && lineNumbersRef.current) {
+    if (textareaRef.current && preRef.current) {
       preRef.current.scrollTop = textareaRef.current.scrollTop;
       preRef.current.scrollLeft = textareaRef.current.scrollLeft;
-      lineNumbersRef.current.scrollTop = textareaRef.current.scrollTop;
     }
   }, []);
 
@@ -87,10 +85,24 @@ const CodeEditorWithLineNumbers: React.FC<{
   // Auto-resize and sync
   useEffect(() => {
     if (textareaRef.current && preRef.current) {
+      // Calculate the height needed for all content
+      const lineHeight = 22.4; // matches CSS line-height * font-size (1.6 * 14px)
+      const padding = 32; // 16px top + 16px bottom
+      const contentHeight = (lineCount * lineHeight) + padding;
+      const minHeight = 300; // minimum height from CSS
+      
+      // Set height to fit all content, with minimum
+      const height = Math.max(contentHeight, minHeight);
+      
+      // Apply height to pre and textarea
+      preRef.current.style.height = `${height}px`;
+      textareaRef.current.style.height = `${height}px`;
+      
+      // Sync scroll position
       preRef.current.scrollTop = textareaRef.current.scrollTop;
       preRef.current.scrollLeft = textareaRef.current.scrollLeft;
     }
-  }, [value]);
+  }, [value, lineCount]);
 
   const highlightedCode = useMemo(() => highlightMermaid(value), [value]);
 
@@ -99,18 +111,6 @@ const CodeEditorWithLineNumbers: React.FC<{
       className="code-editor-wrapper"
       style={{ minHeight }}
     >
-      {/* Line Numbers */}
-      <div 
-        ref={lineNumbersRef}
-        className="code-line-numbers"
-      >
-        {Array.from({ length: lineCount }, (_, i) => (
-          <div key={i + 1} className="code-line-number">
-            {i + 1}
-          </div>
-        ))}
-      </div>
-      
       {/* Code Area */}
       <div className="code-editor-area">
         {/* Highlighted code (visible) */}

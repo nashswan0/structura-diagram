@@ -1,6 +1,6 @@
 /* VSCode-like Code Editor Styles */
 
-/* Main wrapper - Fixed height with internal scroll */
+/* Main wrapper - Container only, no scroll */
 .code-editor-wrapper {
   display: flex;
   width: 100%;
@@ -9,7 +9,7 @@
   min-height: 300px;
   background-color: #1e1e2e;
   border-radius: 0.5rem;
-  overflow: hidden;
+  overflow: hidden; /* Hide overflow but don't scroll here */
   font-family: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', 'Consolas', 'Monaco', monospace;
   font-size: 14px;
   line-height: 1.6;
@@ -25,54 +25,6 @@
   }
 }
 
-/* Line numbers column */
-.code-line-numbers {
-  display: flex;
-  flex-direction: column;
-  padding: 16px 0;
-  background-color: #1e1e2e;
-  border-right: 1px solid #313244;
-  min-width: 50px;
-  max-width: 50px;
-  text-align: right;
-  user-select: none;
-  overflow-y: auto;
-  overflow-x: hidden;
-  flex-shrink: 0;
-  scrollbar-width: none; /* Firefox */
-  -ms-overflow-style: none; /* IE/Edge */
-}
-
-.code-line-numbers::-webkit-scrollbar {
-  display: none; /* Chrome/Safari */
-}
-
-/* Mobile line numbers */
-@media (max-width: 768px) {
-  .code-line-numbers {
-    min-width: 40px;
-    max-width: 40px;
-    padding: 12px 0;
-  }
-}
-
-.code-line-number {
-  padding: 0 12px 0 8px;
-  color: #6c7086;
-  font-size: 14px;
-  line-height: 1.6;
-  min-height: 22.4px;
-  flex-shrink: 0;
-}
-
-@media (max-width: 768px) {
-  .code-line-number {
-    padding: 0 8px 0 4px;
-    font-size: 12px;
-    min-height: 19.2px;
-  }
-}
-
 /* Code area */
 .code-editor-area {
   position: relative;
@@ -81,7 +33,7 @@
   -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
 }
 
-/* Custom scrollbar for code area */
+/* Custom scrollbar for code area - Dark mode */
 .code-editor-area::-webkit-scrollbar {
   width: 10px;
   height: 10px;
@@ -100,6 +52,20 @@
   background: #585b70;
 }
 
+/* Custom scrollbar for code area - Light mode */
+:root:not(.dark) .code-editor-area::-webkit-scrollbar-track {
+  background: #eff1f5;
+}
+
+:root:not(.dark) .code-editor-area::-webkit-scrollbar-thumb {
+  background: #bcc0cc;
+  border-radius: 5px;
+}
+
+:root:not(.dark) .code-editor-area::-webkit-scrollbar-thumb:hover {
+  background: #9ca0b0;
+}
+
 /* Highlighted code (pre element) */
 .code-highlight {
   margin: 0;
@@ -113,7 +79,10 @@
   word-wrap: normal;
   overflow-wrap: normal;
   pointer-events: none;
-  min-height: 100%;
+  min-height: 100%; /* Minimum to fill container */
+  box-sizing: border-box; /* Include padding in width calculation */
+  width: 100%; /* Match textarea width */
+  /* Height set dynamically by JavaScript */
 }
 
 @media (max-width: 768px) {
@@ -127,10 +96,9 @@
   position: absolute;
   top: 0;
   left: 0;
-  right: 0;
-  bottom: 0;
   width: 100%;
-  height: 100%;
+  min-height: 100%; /* Minimum to fill container */
+  /* Height set dynamically by JavaScript */
   margin: 0;
   padding: 16px;
   background: transparent;
@@ -145,7 +113,8 @@
   white-space: pre;
   word-wrap: normal;
   overflow-wrap: normal;
-  overflow: hidden;
+  box-sizing: border-box; /* Include padding in width calculation */
+  /* No overflow property - let parent handle scrolling */
 }
 
 @media (max-width: 768px) {
