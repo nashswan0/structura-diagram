@@ -104,18 +104,44 @@ Now generate the most accurate diagram possible for the user's request.
       const errorText = await geminiResponse.text();
       console.error("❌ Gemini API error:", geminiResponse.status, errorText);
 
-      if (geminiResponse.status === 429)
-        return jsonResponse(
-          { error: "Rate limit exceeded. Please try again later." },
-          429
-        );
-      if (geminiResponse.status === 503)
-        return jsonResponse(
-          { error: "Gemini model overloaded. Please retry shortly." },
-          503
-        );
+      // Parse error details if available
+      let errorMessage = "Gagal membuat diagram";
+      try {
+        const errorData = JSON.parse(errorText);
+        const apiError = errorData?.error?.message || "";
+        
+        if (geminiResponse.status === 429) {
+          // Check if it's a quota issue
+          if (apiError.includes("quota") || apiError.includes("RESOURCE_EXHAUSTED")) {
+            errorMessage = "Kuota API Gemini telah habis. Silakan coba lagi nanti atau upgrade ke paket berbayar.";
+          } else {
+            errorMessage = "Terlalu banyak permintaan. Silakan tunggu beberapa saat dan coba lagi.";
+          }
+          return jsonResponse({ error: errorMessage }, 429);
+        }
+        
+        if (geminiResponse.status === 503) {
+          errorMessage = "Layanan Gemini sedang sibuk. Silakan coba lagi dalam beberapa saat.";
+          return jsonResponse({ error: errorMessage }, 503);
+        }
+        
+        if (geminiResponse.status === 401) {
+          errorMessage = "Konfigurasi API key tidak valid. Silakan hubungi administrator.";
+          return jsonResponse({ error: errorMessage }, 401);
+        }
+        
+        if (geminiResponse.status === 400) {
+          errorMessage = "Permintaan tidak valid. Silakan coba lagi dengan prompt yang berbeda.";
+          return jsonResponse({ error: errorMessage }, 400);
+        }
+      } catch (parseError) {
+        // If JSON parsing fails, use generic message
+        console.error("Failed to parse error response:", parseError);
+      }
 
-      return jsonResponse({ error: "Failed to connect to Gemini API" }, 500);
+      return jsonResponse({ 
+        error: `${errorMessage} (Error ${geminiResponse.status})` 
+      }, geminiResponse.status);
     }
 
     const data = await geminiResponse.json();

@@ -34,6 +34,12 @@ export const generateMermaidDiagram = async (prompt: string): Promise<string> =>
       throw new Error(`Failed to generate diagram: ${error.message || 'Unknown server error'}`);
     }
 
+    // Check if the response contains an error field (from edge function)
+    if (data?.error) {
+      console.error('Edge function returned error:', data.error);
+      throw new Error(data.error);
+    }
+
     if (!data || !data.diagram) {
       throw new Error('No diagram returned from the AI service. Please try again with a different prompt.');
     }

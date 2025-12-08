@@ -79,7 +79,7 @@ IMPORTANT: The output must be immediately renderable without any modifications.
     // ✅ Fungsi untuk request ke Gemini API (fast optimized)
     async function requestGemini(userPrompt: string) {
       const response = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`,
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -104,12 +104,44 @@ IMPORTANT: The output must be immediately renderable without any modifications.
         const text = await response.text();
         console.error("❌ Gemini API error:", response.status, text);
 
-        if (response.status === 401)
-          return jsonResponse({ error: "Invalid Gemini API key" }, 401);
-        if (response.status === 429)
-          return jsonResponse({ error: "Rate limit exceeded" }, 429);
+        // Parse error details if available
+        let errorMessage = "Gagal memperbaiki diagram";
+        try {
+          const errorData = JSON.parse(text);
+          const apiError = errorData?.error?.message || "";
+          
+          if (response.status === 429) {
+            // Check if it's a quota issue
+            if (apiError.includes("quota") || apiError.includes("RESOURCE_EXHAUSTED")) {
+              errorMessage = "Kuota API Gemini telah habis. Silakan coba lagi nanti atau upgrade ke paket berbayar.";
+            } else {
+              errorMessage = "Terlalu banyak permintaan. Silakan tunggu beberapa saat dan coba lagi.";
+            }
+            return jsonResponse({ error: errorMessage }, 429);
+          }
+          
+          if (response.status === 401) {
+            errorMessage = "Konfigurasi API key tidak valid. Silakan hubungi administrator.";
+            return jsonResponse({ error: errorMessage }, 401);
+          }
+          
+          if (response.status === 503) {
+            errorMessage = "Layanan Gemini sedang sibuk. Silakan coba lagi dalam beberapa saat.";
+            return jsonResponse({ error: errorMessage }, 503);
+          }
+          
+          if (response.status === 400) {
+            errorMessage = "Permintaan tidak valid. Silakan coba lagi dengan diagram yang berbeda.";
+            return jsonResponse({ error: errorMessage }, 400);
+          }
+        } catch (parseError) {
+          // If JSON parsing fails, use generic message
+          console.error("Failed to parse error response:", parseError);
+        }
 
-        throw new Error(`Gemini API request failed (${response.status})`);
+        return jsonResponse({ 
+          error: `${errorMessage} (Error ${response.status})` 
+        }, response.status);
       }
 
       return await response.json();
