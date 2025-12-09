@@ -48,10 +48,21 @@ serve(async (req) => {
 
     console.log(`✅ Loaded ${validKeys.length} Gemini API keys`);
 
-    // System prompt
+    // System prompt - OPTIMIZED FOR DETAILED OUTPUT
     const systemPrompt = `
 You are a diagram generation expert proficient in both Mermaid and PlantUML syntax.
 Your mission is to generate a fully valid, complete, and immediately renderable diagram that precisely represents the user's description.
+
+🎯 CRITICAL INSTRUCTIONS FOR COMPREHENSIVE DETAIL:
+- Generate EXTREMELY DETAILED and COMPLETE diagrams
+- Include ALL possible actors, use cases, nodes, and relationships
+- Be THOROUGH and COMPREHENSIVE - do not simplify or summarize
+- For use case diagrams: include ALL actors (primary, secondary, admin) and ALL possible use cases
+- For ERDs: include ALL entities, attributes, and relationships
+- For flowcharts: include ALL steps, decisions, and error handling paths
+- For sequence diagrams: show COMPLETE message flows with all interactions
+- For class diagrams: include ALL methods, properties, and relationships
+- Aim for MAXIMUM completeness - the more detail, the better!
 
 MANDATORY RULES FOR ALL RESPONSES:
 - Make sure to create the diagram based on the user's prompt language. If it's written in English, create diagram using English. If it's written in Bahasa Indonesia, create diagram using Bahasa Indonesia.
@@ -92,12 +103,19 @@ MANDATORY RULES FOR ALL RESPONSES:
   • Prevent collisions between Mermaid syntax characters and text labels by quoting any label that is not plain alphanumeric.
 
 🚀 Performance Optimization:
-- Use concise variable names when possible.
-- Keep the diagram well-structured but avoid redundant nodes.
-- Aim for full code output, even if it consumes many tokens.
-- The output should be complete within one response.
+- Use concise but descriptive variable names.
+- Keep the diagram well-structured and logically organized.
+- Aim for MAXIMUM detail and completeness - use as many tokens as needed.
+- The output should be comprehensive and production-ready.
+- Prioritize completeness and detail over brevity.
 
-Now generate the most accurate diagram possible for the user's request.
+EXAMPLES OF COMPREHENSIVE OUTPUT:
+
+For "sistem pemesanan produk online", include:
+- Actors: Pelanggan, Admin, Sistem Pembayaran, Kurir
+- Use Cases: Registrasi, Login, Cari Produk, Lihat Detail, Tambah Keranjang, Checkout, Bayar, Lihat Status, Beri Ulasan, Kelola Produk, Kelola Kategori, Kelola Pesanan, Kelola Pengguna, Lihat Laporan, dll.
+
+Now generate the most accurate, detailed, and comprehensive diagram possible for the user's request.
 `;
 
     const userPrompt = `User request:\n${prompt}`;
@@ -170,16 +188,33 @@ Now generate the most accurate diagram possible for the user's request.
 
           // Success! Parse response
           const data = await response.json();
+          
+          // 📊 Log detailed response info
+          console.log(`📊 Gemini API Response (Key #${keyIndex}):`);
+          console.log(`   Model: gemini-2.5-flash`);
+          console.log(`   Finish Reason: ${data?.candidates?.[0]?.finishReason || 'N/A'}`);
+          
+          // Log token usage if available
+          if (data?.usageMetadata) {
+            console.log(`   📈 Token Usage:`);
+            console.log(`      - Prompt Tokens: ${data.usageMetadata.promptTokenCount || 0}`);
+            console.log(`      - Completion Tokens: ${data.usageMetadata.candidatesTokenCount || 0}`);
+            console.log(`      - Total Tokens: ${data.usageMetadata.totalTokenCount || 0}`);
+          }
+          
           const generatedText = data?.candidates?.[0]?.content?.parts?.[0]?.text;
 
           if (!generatedText) {
             console.error("⚠️ No text in response");
+            console.error("Full response:", JSON.stringify(data, null, 2));
             throw new Error("No diagram generated");
           }
 
+          console.log(`   ✅ Generated ${generatedText.length} characters`);
+
           // Increment usage counter
           await supabase.rpc('increment_key_usage', { key_idx: keyIndex });
-          console.log(`✅ Success with key #${keyIndex}`);
+          console.log(`✅ Success with key #${keyIndex} - Usage incremented`);
 
           return generatedText;
 
