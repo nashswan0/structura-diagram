@@ -272,11 +272,11 @@ const TokenPurchase = () => {
                         </p>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8 justify-items-center">
+                    <div className="flex flex-wrap justify-center gap-6 lg:gap-8">
                         {packages.map((pkg, index) => (
                             <Card
                                 key={pkg.id}
-                                className={`relative glass-panel hover:scale-105 transition-all duration-300 overflow-hidden group animate-scale-in ${pkg.popular || pkg.bestValue ? 'ring-2 ring-violet-500 shadow-2xl' : ''
+                                className={`relative glass-panel hover:scale-105 transition-all duration-300 overflow-hidden group animate-scale-in w-full md:w-[calc(50%-1rem)] lg:w-[calc(33.333%-1.5rem)] max-w-sm ${pkg.popular || pkg.bestValue ? 'ring-2 ring-violet-500 shadow-2xl' : ''
                                     }`}
                                 style={{ animationDelay: `${index * 100}ms` }}
                             >
