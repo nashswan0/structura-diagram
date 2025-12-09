@@ -9,9 +9,12 @@ export const generateMermaidDiagram = async (prompt: string): Promise<string> =>
     if (error) {
       console.error('❌ Supabase function error:', error);
       
-      // Handle specific error types with clear messages
-      if (error.message?.includes('rate limit') || error.message?.includes('429')) {
-        throw new Error('Rate limit exceeded. Please wait a moment and try again.');
+      // Handle concurrency/rate limit errors (429)
+      if (error.message?.includes('rate limit') || 
+          error.message?.includes('429') || 
+          error.message?.includes('sedang sibuk') ||
+          error.message?.includes('High concurrency')) {
+        throw new Error('⏳ Layanan sedang sibuk karena banyak pengguna. Silakan tunggu 5-10 detik dan coba lagi.');
       }
       
       if (error.message?.includes('503') || error.message?.includes('overloaded')) {

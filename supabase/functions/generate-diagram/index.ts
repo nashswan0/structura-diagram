@@ -13,6 +13,47 @@ function jsonResponse(body: Record<string, unknown>, status = 200) {
   });
 }
 
+// Helper function to sleep/delay
+function sleep(ms: number): Promise<void> {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+// Retry function with exponential backoff for concurrency errors
+async function retryWithBackoff<T>(
+  fn: () => Promise<T>,
+  maxRetries = 3,
+  initialDelay = 1000
+): Promise<T> {
+  let lastError: Error | null = null;
+  
+  for (let attempt = 0; attempt <= maxRetries; attempt++) {
+    try {
+      return await fn();
+    } catch (error) {
+      lastError = error as Error;
+      
+      // Check if it's a concurrency error (GLM specific)
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      const isConcurrencyError = errorMessage.includes('1302') || 
+                                 errorMessage.includes('High concurrency') ||
+                                 errorMessage.includes('concurrency usage');
+      
+      // If it's the last attempt or not a concurrency error, throw immediately
+      if (attempt === maxRetries || !isConcurrencyError) {
+        throw error;
+      }
+      
+      // Calculate delay with exponential backoff + jitter
+      const delay = initialDelay * Math.pow(2, attempt) + Math.random() * 500;
+      console.log(`⏳ Concurrency limit hit, retrying in ${delay}ms (attempt ${attempt + 1}/${maxRetries})...`);
+      
+      await sleep(delay);
+    }
+  }
+  
+  throw lastError || new Error('Max retries exceeded');
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS")
     return new Response(null, { headers: corsHeaders });
@@ -22,8 +63,13 @@ serve(async (req) => {
     if (!prompt) return jsonResponse({ error: "Prompt is required" }, 400);
 
     const GEMINI_API_KEY = Deno.env.get("GEMINI_API_KEY");
-    if (!GEMINI_API_KEY) {
-      console.error("❌ Missing GEMINI_API_KEY");
+    const GLM_API_KEY = Deno.env.get("GLM_API_KEY");
+    
+    // Prioritize GLM if available, fallback to Gemini
+    const useGLM = !!GLM_API_KEY;
+    
+    if (!GEMINI_API_KEY && !GLM_API_KEY) {
+      console.error("❌ Missing API keys");
       return jsonResponse(
         { error: "Server misconfiguration: missing API key" },
         500
@@ -81,94 +127,188 @@ Now generate the most accurate diagram possible for the user's request.
 
     const userPrompt = `User request:\n${prompt}`;
 
-    const geminiResponse = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`,
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          contents: [{ parts: [{ text: `${systemPrompt}\n\n${userPrompt}` }] }],
-          generationConfig: {
-            temperature: 0.7,
-            topP: 0.95,
-            topK: 50,
-            candidateCount: 1,
-            maxOutputTokens: 8192,
-            responseMimeType: "text/plain",
-          },
-        }),
-      }
-    );
-
-    if (!geminiResponse.ok) {
-      const errorText = await geminiResponse.text();
-      console.error("❌ Gemini API error:", geminiResponse.status, errorText);
-
-      // Parse error details if available
-      let errorMessage = "Gagal membuat diagram";
-      try {
-        const errorData = JSON.parse(errorText);
-        const apiError = errorData?.error?.message || "";
-        
-        if (geminiResponse.status === 429) {
-          // Check if it's a quota issue
-          if (apiError.includes("quota") || apiError.includes("RESOURCE_EXHAUSTED")) {
-            errorMessage = "Kuota API Gemini telah habis. Silakan coba lagi nanti atau upgrade ke paket berbayar.";
-          } else {
-            errorMessage = "Terlalu banyak permintaan. Silakan tunggu beberapa saat dan coba lagi.";
+    // Function to call API with retry logic
+    const callAIAPI = async () => {
+      if (useGLM) {
+        // GLM API call
+        const glmResponse = await fetch(
+          "https://open.bigmodel.cn/api/paas/v4/chat/completions",
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "Authorization": `Bearer ${GLM_API_KEY}`,
+            },
+            body: JSON.stringify({
+              model: "glm-4-flash",
+              messages: [
+                { role: "system", content: systemPrompt },
+                { role: "user", content: userPrompt }
+              ],
+              temperature: 0.7,
+              top_p: 0.95,
+              max_tokens: 8192,
+            }),
           }
-          return jsonResponse({ error: errorMessage }, 429);
+        );
+
+        if (!glmResponse.ok) {
+          const errorText = await glmResponse.text();
+          console.error("❌ GLM API error:", glmResponse.status, errorText);
+
+          let errorMessage = "Gagal membuat diagram";
+          try {
+            const errorData = JSON.parse(errorText);
+            const apiError = errorData?.error?.message || "";
+            const errorCode = errorData?.error?.code || "";
+
+            // Handle GLM-specific concurrency error
+            if (errorCode === "1302" || apiError.includes("High concurrency")) {
+              throw new Error("GLM_CONCURRENCY_ERROR: " + apiError);
+            }
+
+            if (glmResponse.status === 429) {
+              errorMessage = "Terlalu banyak permintaan. Silakan tunggu beberapa saat dan coba lagi.";
+              throw new Error(errorMessage);
+            }
+
+            if (glmResponse.status === 503) {
+              errorMessage = "Layanan GLM sedang sibuk. Silakan coba lagi dalam beberapa saat.";
+              throw new Error(errorMessage);
+            }
+
+            if (glmResponse.status === 401) {
+              errorMessage = "Konfigurasi API key tidak valid. Silakan hubungi administrator.";
+              throw new Error(errorMessage);
+            }
+
+            if (glmResponse.status === 400) {
+              errorMessage = "Permintaan tidak valid. Silakan coba lagi dengan prompt yang berbeda.";
+              throw new Error(errorMessage);
+            }
+          } catch (parseError) {
+            if (parseError instanceof Error && parseError.message.includes("GLM_CONCURRENCY_ERROR")) {
+              throw parseError;
+            }
+            console.error("Failed to parse error response:", parseError);
+          }
+
+          throw new Error(`${errorMessage} (Error ${glmResponse.status})`);
         }
-        
-        if (geminiResponse.status === 503) {
-          errorMessage = "Layanan Gemini sedang sibuk. Silakan coba lagi dalam beberapa saat.";
-          return jsonResponse({ error: errorMessage }, 503);
+
+        const data = await glmResponse.json();
+        console.log("🧠 GLM raw response:", JSON.stringify(data, null, 2));
+
+        const generatedText = data?.choices?.[0]?.message?.content ?? null;
+
+        if (!generatedText) {
+          console.error("⚠️ Invalid GLM response structure:", data);
+          throw new Error("No diagram returned from GLM API");
         }
-        
-        if (geminiResponse.status === 401) {
-          errorMessage = "Konfigurasi API key tidak valid. Silakan hubungi administrator.";
-          return jsonResponse({ error: errorMessage }, 401);
+
+        return generatedText;
+      } else {
+        // Gemini API call (fallback)
+        const geminiResponse = await fetch(
+          `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`,
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              contents: [{ parts: [{ text: `${systemPrompt}\n\n${userPrompt}` }] }],
+              generationConfig: {
+                temperature: 0.7,
+                topP: 0.95,
+                topK: 50,
+                candidateCount: 1,
+                maxOutputTokens: 8192,
+                responseMimeType: "text/plain",
+              },
+            }),
+          }
+        );
+
+        if (!geminiResponse.ok) {
+          const errorText = await geminiResponse.text();
+          console.error("❌ Gemini API error:", geminiResponse.status, errorText);
+
+          let errorMessage = "Gagal membuat diagram";
+          try {
+            const errorData = JSON.parse(errorText);
+            const apiError = errorData?.error?.message || "";
+
+            if (geminiResponse.status === 429) {
+              if (apiError.includes("quota") || apiError.includes("RESOURCE_EXHAUSTED")) {
+                errorMessage = "Kuota API Gemini telah habis. Silakan coba lagi nanti atau upgrade ke paket berbayar.";
+              } else {
+                errorMessage = "Terlalu banyak permintaan. Silakan tunggu beberapa saat dan coba lagi.";
+              }
+              throw new Error(errorMessage);
+            }
+
+            if (geminiResponse.status === 503) {
+              errorMessage = "Layanan Gemini sedang sibuk. Silakan coba lagi dalam beberapa saat.";
+              throw new Error(errorMessage);
+            }
+
+            if (geminiResponse.status === 401) {
+              errorMessage = "Konfigurasi API key tidak valid. Silakan hubungi administrator.";
+              throw new Error(errorMessage);
+            }
+
+            if (geminiResponse.status === 400) {
+              errorMessage = "Permintaan tidak valid. Silakan coba lagi dengan prompt yang berbeda.";
+              throw new Error(errorMessage);
+            }
+          } catch (parseError) {
+            console.error("Failed to parse error response:", parseError);
+          }
+
+          throw new Error(`${errorMessage} (Error ${geminiResponse.status})`);
         }
-        
-        if (geminiResponse.status === 400) {
-          errorMessage = "Permintaan tidak valid. Silakan coba lagi dengan prompt yang berbeda.";
-          return jsonResponse({ error: errorMessage }, 400);
+
+        const data = await geminiResponse.json();
+        console.log("🧠 Gemini raw response:", JSON.stringify(data, null, 2));
+
+        const finishReason = data?.candidates?.[0]?.finishReason;
+        if (finishReason === "MAX_TOKENS") {
+          console.warn(
+            "⚠️ Gemini response exceeded MAX_TOKENS limit, returning partial response"
+          );
         }
-      } catch (parseError) {
-        // If JSON parsing fails, use generic message
-        console.error("Failed to parse error response:", parseError);
+
+        const generatedText =
+          data?.candidates?.[0]?.content?.parts?.[0]?.text ??
+          data?.candidates?.[0]?.output ??
+          null;
+
+        if (!generatedText) {
+          console.error("⚠️ Invalid Gemini response structure:", data);
+          throw new Error("No diagram returned from Gemini API");
+        }
+
+        return generatedText;
       }
+    };
 
-      return jsonResponse({ 
-        error: `${errorMessage} (Error ${geminiResponse.status})` 
-      }, geminiResponse.status);
-    }
-
-    const data = await geminiResponse.json();
-    console.log("🧠 Gemini raw response:", JSON.stringify(data, null, 2));
-
-    // Check for MAX_TOKENS finish reason - but still return partial response
-    const finishReason = data?.candidates?.[0]?.finishReason;
-    if (finishReason === "MAX_TOKENS") {
-      console.warn(
-        "⚠️ Gemini response exceeded MAX_TOKENS limit, returning partial response"
-      );
-    }
-
-    const generatedText =
-      data?.candidates?.[0]?.content?.parts?.[0]?.text ??
-      data?.candidates?.[0]?.output ??
-      null;
-
-    if (!generatedText) {
-      console.error("⚠️ Invalid Gemini response structure:", data);
-      // Fallback: return a basic diagram based on the user prompt
-      const fallbackDiagram = `graph TD
-    A["User Request"] --> B["Processing"]
-    B --> C["Result"]
-    
-    %% Generated from: ${prompt}`;
-      return jsonResponse({ diagram: fallbackDiagram });
+    // Call API with retry logic for concurrency errors
+    let generatedText: string;
+    try {
+      generatedText = await retryWithBackoff(callAIAPI, 3, 1000);
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      
+      // Check if it's still a concurrency error after all retries
+      if (errorMessage.includes('1302') || errorMessage.includes('High concurrency')) {
+        return jsonResponse({
+          error: "Layanan sedang sibuk karena banyak pengguna. Silakan tunggu 5-10 detik dan coba lagi."
+        }, 429);
+      }
+      
+      // Return other errors as-is
+      return jsonResponse({
+        error: errorMessage
+      }, 500);
     }
 
     // 🧹 Bersihkan hasil
