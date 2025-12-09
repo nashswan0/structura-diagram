@@ -35,9 +35,9 @@ export const translations = {
     },
     stats: {
       generation: {
-        value: '5–10s',
+        value: '10–30s',
         label: 'Diagram Generation',
-        tooltip: 'Generate professional diagrams in just 5-10 seconds',
+        tooltip: 'Generate professional diagrams in just 10-30 seconds',
       },
       types: {
         value: '25+',
@@ -271,9 +271,9 @@ export const translations = {
     },
     stats: {
       generation: {
-        value: '5–10d',
+        value: '10–30 detik',
         label: 'Pembuatan Diagram',
-        tooltip: 'Buat diagram profesional hanya dalam 5-10 detik',
+        tooltip: 'Buat diagram profesional hanya dalam 10-30 detik',
       },
       types: {
         value: '25+',
