@@ -147,12 +147,13 @@ Now generate the most accurate diagram possible for the user's request.
       if (useGLM) {
         // GLM API call
         const glmResponse = await fetch(
-          "https://open.bigmodel.cn/api/paas/v4/chat/completions",
+          "https://api.z.ai/api/paas/v4/chat/completions",  // ✅ FIXED: Use Z.AI endpoint
           {
             method: "POST",
             headers: {
-              "Content-Type": "application/json",
               "Authorization": `Bearer ${GLM_API_KEY}`,
+              "Content-Type": "application/json",
+              "Accept-Language": "en-US,en"
             },
             body: JSON.stringify({
               model: "glm-4.5-flash",
