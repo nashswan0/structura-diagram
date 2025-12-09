@@ -13,6 +13,7 @@ import ParticleBackground from '@/components/ParticleBackground';
 import QRISModal from '@/components/QRISModal';
 import { toast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
+import structuraToken from '@/assets/structura-token.png';
 
 interface TokenPackage {
     id: string;
@@ -208,8 +209,12 @@ const TokenPurchase = () => {
                         {/* Floating Token Animation */}
                         <div className="relative inline-block mb-8">
                             <div className="absolute inset-0 bg-gradient-to-r from-violet-500 via-purple-500 to-pink-500 rounded-full blur-3xl opacity-30 animate-pulse" />
-                            <div className="relative bg-gradient-to-r from-violet-500 via-purple-500 to-pink-500 text-white text-6xl md:text-8xl font-bold rounded-3xl p-8 md:p-12 shadow-2xl animate-scale-in">
-                                💎
+                            <div className="relative bg-gradient-to-r from-violet-500 via-purple-500 to-pink-500 rounded-3xl p-8 md:p-12 shadow-2xl animate-scale-in flex items-center justify-center">
+                                <img 
+                                    src={structuraToken} 
+                                    alt="Structura Token" 
+                                    className="w-24 h-24 md:w-32 md:h-32 object-contain"
+                                />
                             </div>
                         </div>
 
