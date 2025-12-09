@@ -28,95 +28,73 @@ serve(async (req) => {
     }
 
     // ✅ Ambil API key dari environment (Supabase Edge Secret)
-    const GEMINI_API_KEY = Deno.env.get("GEMINI_API_KEY");
-    if (!GEMINI_API_KEY) {
-      console.error("❌ Missing GEMINI_API_KEY");
+    const GLM_API_KEY = Deno.env.get("GLM_API_KEY");
+    if (!GLM_API_KEY) {
+      console.error("❌ Missing GLM_API_KEY");
       return jsonResponse(
-        { error: "Server misconfiguration: missing Gemini API key" },
+        { error: "Server misconfiguration: missing GLM API key" },
         500,
       );
     }
 
-    const systemPrompt = `
-You are a world-class expert in diagram syntax (Mermaid and PlantUML).
-Your goal is to FIX and IMPROVE broken diagram code based on the provided error message.
-Return the complete and valid diagram syntax code that renders without errors.
+    const systemPrompt = `You are a diagram syntax expert. Fix the broken diagram code based on the error.
 
-Rules:
-- Detect the diagram type from the code (Mermaid or PlantUML) and fix accordingly.
-- Output ONLY valid diagram syntax (no markdown, no explanations, no comments).
-- Be fast and concise but ensure all relationships and structures are complete.
-- Always include nodes and connections if missing.
-- For Mermaid: Use proper syntax like graph TD, flowchart LR, sequenceDiagram, etc.
-- For PlantUML: Use proper @startuml/@enduml tags and syntax.
-- Fix common errors:
-  * Invalid node IDs (use alphanumeric, no special chars except underscore/hyphen)
-  * Missing quotes for labels with spaces or special characters
-  * Incorrect arrow syntax (use --> or --- for Mermaid)
-  * Malformed connections or cyclic dependencies
-  * Invalid shape syntax (use correct brackets: [], (), {}, etc.)
-  * Missing semicolons or line breaks between statements
-- Validate the output is 100% renderable before returning.
-`;
+CRITICAL RULES:
+- Output ONLY the corrected diagram code
+- NO explanations, NO reasoning, NO markdown
+- Start directly with @startuml (PlantUML) or diagram type (Mermaid)
+- Be concise and direct`;
 
-    const userPrompt = `
-🔴 ERROR DETECTED:
-${error}
+    const userPrompt = `Error: ${error}
 
-📋 CURRENT DIAGRAM CODE:
+Code:
 ${code}
 
-🎯 TASK:
-1. Analyze the error message carefully
-2. Identify the exact line/syntax causing the error
-3. Fix the error while preserving the diagram's intent and structure
-4. Ensure all nodes, connections, and labels are valid
-5. Return ONLY the corrected diagram code (no explanations)
+Fix it now (output only the corrected code):`;
 
-IMPORTANT: The output must be immediately renderable without any modifications.
-`;
-
-    // ✅ Fungsi untuk request ke Gemini API (fast optimized)
-    async function requestGemini(userPrompt: string) {
+    // ✅ Fungsi untuk request ke GLM API (optimized for direct output)
+    async function requestGLM(userPrompt: string) {
       const response = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`,
+        "https://open.bigmodel.cn/api/paas/v4/chat/completions",
         {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${GLM_API_KEY}`,
+          },
           body: JSON.stringify({
-            contents: [
-              {
-                parts: [{ text: `${systemPrompt}\n\n${userPrompt}` }],
-              },
+            model: "glm-4-flash",
+            messages: [
+              { role: "system", content: systemPrompt },
+              { role: "user", content: userPrompt }
             ],
-            generationConfig: {
-              temperature: 0.3,        // Lebih rendah = fokus dan cepat
-              topP: 0.8,               // Membatasi variasi untuk kecepatan
-              topK: 40,                // Sampling terbatas agar efisien
-              maxOutputTokens: 3000,   // Masih cukup besar untuk output panjang
-              candidateCount: 1,       // Satu hasil saja = lebih cepat
-            },
+            temperature: 0.1,  // Very low = more focused, less reasoning
+            top_p: 0.7,        // Limit diversity
+            max_tokens: 2000,  // Enough for diagram, not too much for reasoning
+            // Note: GLM doesn't support response_format like OpenAI
+            // But low temperature + directive prompt should minimize reasoning
           }),
-        },
+        }
       );
 
       if (!response.ok) {
         const text = await response.text();
-        console.error("❌ Gemini API error:", response.status, text);
+        console.error("❌ GLM API error:", response.status, text);
 
         // Parse error details if available
         let errorMessage = "Gagal memperbaiki diagram";
         try {
           const errorData = JSON.parse(text);
           const apiError = errorData?.error?.message || "";
+          const errorCode = errorData?.error?.code || "";
+          
+          if (errorCode === "1302" || apiError.includes("High concurrency")) {
+            errorMessage = "Terlalu banyak permintaan. Silakan tunggu beberapa saat dan coba lagi.";
+            return jsonResponse({ error: errorMessage }, 429);
+          }
           
           if (response.status === 429) {
-            // Check if it's a quota issue
-            if (apiError.includes("quota") || apiError.includes("RESOURCE_EXHAUSTED")) {
-              errorMessage = "Kuota API Gemini telah habis. Silakan coba lagi nanti atau upgrade ke paket berbayar.";
-            } else {
-              errorMessage = "Terlalu banyak permintaan. Silakan tunggu beberapa saat dan coba lagi.";
-            }
+            errorMessage = "Terlalu banyak permintaan. Silakan tunggu beberapa saat dan coba lagi.";
             return jsonResponse({ error: errorMessage }, 429);
           }
           
@@ -126,7 +104,7 @@ IMPORTANT: The output must be immediately renderable without any modifications.
           }
           
           if (response.status === 503) {
-            errorMessage = "Layanan Gemini sedang sibuk. Silakan coba lagi dalam beberapa saat.";
+            errorMessage = "Layanan GLM sedang sibuk. Silakan coba lagi dalam beberapa saat.";
             return jsonResponse({ error: errorMessage }, 503);
           }
           
@@ -148,7 +126,7 @@ IMPORTANT: The output must be immediately renderable without any modifications.
     }
 
     // ✅ Kirim permintaan utama
-    const data = await requestGemini(userPrompt);
+    const data = await requestGLM(userPrompt);
 
     // ✅ Ekstrak teks dari hasil (support both Gemini and GLM formats)
     let text: string | null = null;
