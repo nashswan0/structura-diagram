@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
-import { Sparkles, Loader2, Coins } from "lucide-react";
+import { Sparkles, Loader2, Coins, Download } from "lucide-react";
 import { cn } from '@/lib/utils';
 import { generateMermaidDiagram } from '@/utils/diagramApi';
 import { toast } from "@/hooks/use-toast";
@@ -19,10 +19,11 @@ import {
 interface AIPromptProps {
   prompt: string;
   onDiagramGenerated: (diagram: string) => void;
+  onExport: () => void;
   className?: string;
 }
 
-const AIPrompt: React.FC<AIPromptProps> = ({ prompt, onDiagramGenerated, className }) => {
+const AIPrompt: React.FC<AIPromptProps> = ({ prompt, onDiagramGenerated, onExport, className }) => {
   const [loading, setLoading] = useState(false);
   const [showTokenDialog, setShowTokenDialog] = useState(false);
   const { tokens, consumeToken, isAdmin } = useTokens();
@@ -86,11 +87,11 @@ const AIPrompt: React.FC<AIPromptProps> = ({ prompt, onDiagramGenerated, classNa
 
   return (
     <>
-      <div className={cn("flex flex-col sm:flex-row items-start sm:items-center gap-3", className)}>
+      <div className={cn("flex flex-col md:flex-row items-stretch gap-2 md:gap-3 w-full", className)}>
         <Button
           onClick={handleGenerate}
           disabled={loading || !prompt.trim() || (!isAdmin && tokens <= 0)}
-          className="min-w-32 bg-gradient-primary hover:opacity-90 transition-all duration-300 shadow-lg"
+          className="flex-1 bg-gradient-primary hover:opacity-90 transition-all duration-300 shadow-lg"
         >
           {loading ? (
             <>
@@ -105,18 +106,14 @@ const AIPrompt: React.FC<AIPromptProps> = ({ prompt, onDiagramGenerated, classNa
           )}
         </Button>
 
-        <div className="flex items-center gap-3">
-          <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-accent/10 border border-border/50">
-            <Coins className="h-4 w-4 text-primary" />
-            <span className="text-sm font-medium">
-              {t.auth.tokensLabel}: <span className="text-primary font-bold">{isAdmin ? '∞' : tokens}</span>
-            </span>
-          </div>
-
-          {/* <p className="text-xs text-muted-foreground">
-            Powered by Gemini 2.5 Flash
-          </p> */}
-        </div>
+        <Button
+          onClick={onExport}
+          variant="outline"
+          className="flex-1 glass-button"
+        >
+          <Download className="mr-2 h-4 w-4" />
+          Export as PNG
+        </Button>
       </div>
 
       {/* Out of Tokens Dialog */}

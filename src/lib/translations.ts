@@ -469,7 +469,7 @@ export const translations = {
       tagline: 'Dibuat untuk Ide. Didukung oleh AI.',
       quickLinks: 'Tautan Cepat',
       connect: 'Hubungkan',
-      copyright: '© 2025 Structura Diagram. Semua hak dilindungi.',
+      copyright: '© 2025 Structura Diagram. All rights reserved.',
       exampleGallery: 'Galeri Contoh',
     },
   },

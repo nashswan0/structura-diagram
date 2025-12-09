@@ -186,7 +186,7 @@ const Editor: React.FC<EditorProps> = ({
             <textarea
               value={promptValue}
               onChange={(e) => onPromptChange(e.target.value)}
-              placeholder="Describe the diagram you want to create..."
+              placeholder="Deskripsikan diagram yang ingin kamu buat..."
               style={{ minHeight: '300px' }}
               className="editor-container h-full resize-none animate-fade-in"
               spellCheck="false"

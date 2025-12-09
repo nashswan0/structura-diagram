@@ -6,6 +6,7 @@ import AIPrompt from '@/components/AIPrompt';
 import { toast } from "@/hooks/use-toast";
 import { Separator } from "@/components/ui/separator";
 import { saveAs } from 'file-saver';
+import { useTokens } from '@/hooks/useTokens';
 
 const DEFAULT_DIAGRAM = `graph TD
     A[Start] --> B{Decision}
@@ -22,6 +23,7 @@ const Diagram = () => {
     const savedTheme = localStorage.getItem('theme');
     return savedTheme === 'light' ? false : true;
   });
+  const { tokens, isAdmin } = useTokens();
 
   useEffect(() => {
     // Apply theme from localStorage or default to dark
@@ -256,9 +258,10 @@ const Diagram = () => {
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50 dark:from-slate-900 dark:to-slate-800 animate-fade-in">
       <Header 
-        onExport={handleExport} 
         toggleTheme={toggleTheme}
         isDarkMode={isDarkMode}
+        tokens={tokens}
+        isAdmin={isAdmin}
       />
       
       <main className="flex-1 container py-3 md:py-6 px-2 md:px-4 flex flex-col gap-3 md:gap-6">
@@ -274,7 +277,8 @@ const Diagram = () => {
             <Separator className="my-3 md:my-4" />
             <AIPrompt 
               prompt={prompt} 
-              onDiagramGenerated={handleDiagramGenerated} 
+              onDiagramGenerated={handleDiagramGenerated}
+              onExport={handleExport}
             />
           </div>
           
@@ -283,11 +287,96 @@ const Diagram = () => {
           </div>
         </div>
         
-        <div className="glass-panel p-3 md:p-4 text-center text-sm text-slate-500 dark:text-slate-400 animate-slide-in" style={{ animationDelay: '200ms' }}>
-          <p>
-            Create beautiful diagrams powered by AI assistance. 
-            Made with precision and care by Structura Diagram.
-          </p>
+        <div className="glass-panel p-4 md:p-6 animate-slide-in" style={{ animationDelay: '200ms' }}>
+          <h3 className="text-base md:text-lg font-semibold text-slate-700 dark:text-slate-300 mb-3 md:mb-4 text-center">
+            💡 Petunjuk Penggunaan
+          </h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4 text-xs md:text-sm">
+            <div className="bg-white/50 dark:bg-slate-800/50 rounded-lg p-3 md:p-4 border border-slate-200 dark:border-slate-700">
+              <div className="flex items-start gap-2">
+                <span className="text-lg">✨</span>
+                <div className="text-left">
+                  <p className="font-medium text-slate-700 dark:text-slate-300 mb-1">Detail Prompt</p>
+                  <p className="text-slate-600 dark:text-slate-400">
+                    Semakin detail prompt Anda, semakin akurat dan lengkap diagram yang dihasilkan
+                  </p>
+                </div>
+              </div>
+            </div>
+            
+            <div className="bg-white/50 dark:bg-slate-800/50 rounded-lg p-3 md:p-4 border border-slate-200 dark:border-slate-700">
+              <div className="flex items-start gap-2">
+                <span className="text-lg">⚡</span>
+                <div className="text-left">
+                  <p className="font-medium text-slate-700 dark:text-slate-300 mb-1">Waktu Proses</p>
+                  <p className="text-slate-600 dark:text-slate-400">
+                    Diagram kompleks membutuhkan waktu lebih lama. Harap tunggu hingga proses selesai
+                  </p>
+                </div>
+              </div>
+            </div>
+            
+            <div className="bg-white/50 dark:bg-slate-800/50 rounded-lg p-3 md:p-4 border border-slate-200 dark:border-slate-700">
+              <div className="flex items-start gap-2">
+                <span className="text-lg">🎨</span>
+                <div className="text-left">
+                  <p className="font-medium text-slate-700 dark:text-slate-300 mb-1">Edit & Export</p>
+                  <p className="text-slate-600 dark:text-slate-400">
+                    Anda dapat mengedit kode diagram secara manual dan mengekspor hasil dalam format PNG
+                  </p>
+                </div>
+              </div>
+            </div>
+            
+            <div className="bg-white/50 dark:bg-slate-800/50 rounded-lg p-3 md:p-4 border border-slate-200 dark:border-slate-700">
+              <div className="flex items-start gap-2">
+                <span className="text-lg">📝</span>
+                <div className="text-left">
+                  <p className="font-medium text-slate-700 dark:text-slate-300 mb-1">Dukungan Syntax</p>
+                  <p className="text-slate-600 dark:text-slate-400">
+                    Mendukung Mermaid dan PlantUML syntax untuk berbagai jenis diagram
+                  </p>
+                </div>
+              </div>
+            </div>
+            
+            <div className="bg-white/50 dark:bg-slate-800/50 rounded-lg p-3 md:p-4 border border-slate-200 dark:border-slate-700">
+              <div className="flex items-start gap-2">
+                <span className="text-lg">🔧</span>
+                <div className="text-left">
+                  <p className="font-medium text-slate-700 dark:text-slate-300 mb-1">Perbaikan AI</p>
+                  <p className="text-slate-600 dark:text-slate-400">
+                    Gunakan tombol "Fix with AI" jika diagram mengalami error untuk perbaikan otomatis
+                  </p>
+                </div>
+              </div>
+            </div>
+            
+            <div className="bg-white/50 dark:bg-slate-800/50 rounded-lg p-3 md:p-4 border border-slate-200 dark:border-slate-700">
+              <div className="flex items-start gap-2">
+                <span className="text-lg">🌙</span>
+                <div className="text-left">
+                  <p className="font-medium text-slate-700 dark:text-slate-300 mb-1">Mode Tema</p>
+                  <p className="text-slate-600 dark:text-slate-400">
+                    Gunakan toggle tema di header untuk beralih antara mode terang dan gelap
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-white/50 dark:bg-slate-800/50 rounded-lg p-3 md:p-4 border border-slate-200 dark:border-slate-700">
+              <div className="flex items-start gap-2">
+                <span className="text-lg">🚀</span>
+                <div className="text-left">
+                  <p className="font-medium text-slate-700 dark:text-slate-300 mb-1">Template Diagram</p>
+                  <p className="text-slate-600 dark:text-slate-400">
+                    Gunakan template diagram untuk mempermudah pembuatan diagram dan mempelajari syntax diagram
+                  </p>
+                </div>
+              </div>
+            </div>
+
+          </div>
         </div>
       </main>
     </div>

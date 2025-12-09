@@ -295,7 +295,7 @@ const Preview: React.FC<PreviewProps> = ({ code, className, onCodeFixed }) => {
         ) : (
           !loading && !error && (
             <div className="text-center text-slate-400 dark:text-slate-500 animate-fade-in">
-              <p>Your diagram will appear here</p>
+              <p>Diagram akan muncul di sini</p>
             </div>
           )
         )}
