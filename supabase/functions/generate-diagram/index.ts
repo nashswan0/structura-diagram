@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3';
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -6,64 +7,16 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type",
 };
 
+// Initialize Supabase client
+const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+const supabase = createClient(supabaseUrl, supabaseKey);
+
 function jsonResponse(body: Record<string, unknown>, status = 200) {
   return new Response(JSON.stringify(body), {
     status,
     headers: { ...corsHeaders, "Content-Type": "application/json" },
   });
-}
-
-// Helper function to sleep/delay
-function sleep(ms: number): Promise<void> {
-  return new Promise(resolve => setTimeout(resolve, ms));
-}
-
-// Retry function with exponential backoff for concurrency errors
-async function retryWithBackoff<T>(
-  fn: () => Promise<T>,
-  maxRetries = 3,
-  initialDelay = 1000
-): Promise<T> {
-  let lastError: Error | null = null;
-  
-  for (let attempt = 0; attempt <= maxRetries; attempt++) {
-    try {
-      console.log(`🔄 API call attempt ${attempt + 1}/${maxRetries + 1}`);
-      return await fn();
-    } catch (error) {
-      lastError = error as Error;
-      
-      // Check if it's a concurrency error (GLM specific)
-      const errorMessage = error instanceof Error ? error.message : String(error);
-      const isConcurrencyError = errorMessage.includes('1302') || 
-                                 errorMessage.includes('GLM_CONCURRENCY_ERROR') ||
-                                 errorMessage.includes('High concurrency') ||
-                                 errorMessage.includes('concurrent connection') ||
-                                 errorMessage.includes('concurrency usage');
-      
-      console.log(`❌ Error on attempt ${attempt + 1}: ${errorMessage.substring(0, 100)}`);
-      console.log(`🔍 Is concurrency error: ${isConcurrencyError}`);
-      
-      // If it's the last attempt or not a concurrency error, throw immediately
-      if (attempt === maxRetries) {
-        console.log(`⛔ Max retries (${maxRetries}) reached, giving up`);
-        throw error;
-      }
-      
-      if (!isConcurrencyError) {
-        console.log(`⛔ Not a concurrency error, throwing immediately`);
-        throw error;
-      }
-      
-      // Calculate delay with exponential backoff + jitter
-      const delay = initialDelay * Math.pow(2, attempt) + Math.random() * 500;
-      console.log(`⏳ Concurrency limit hit, retrying in ${Math.round(delay)}ms (attempt ${attempt + 1}/${maxRetries})...`);
-      
-      await sleep(delay);
-    }
-  }
-  
-  throw lastError || new Error('Max retries exceeded');
 }
 
 serve(async (req) => {
@@ -74,21 +27,28 @@ serve(async (req) => {
     const { prompt } = await req.json();
     if (!prompt) return jsonResponse({ error: "Prompt is required" }, 400);
 
-    const GEMINI_API_KEY = Deno.env.get("GEMINI_API_KEY");
-    const GLM_API_KEY = Deno.env.get("GLM_API_KEY");
-    
-    // Prioritize GLM if available, fallback to Gemini
-    const useGLM = !!GLM_API_KEY;
-    
-    if (!GEMINI_API_KEY && !GLM_API_KEY) {
-      console.error("❌ Missing API keys");
+    // Load all 5 Gemini API keys
+    const GEMINI_KEYS = [
+      Deno.env.get("GEMINI_API_KEY_1"),
+      Deno.env.get("GEMINI_API_KEY_2"),
+      Deno.env.get("GEMINI_API_KEY_3"),
+      Deno.env.get("GEMINI_API_KEY_4"),
+      Deno.env.get("GEMINI_API_KEY_5"),
+    ];
+
+    // Verify at least one key exists
+    const validKeys = GEMINI_KEYS.filter(key => !!key);
+    if (validKeys.length === 0) {
+      console.error("❌ No Gemini API keys configured");
       return jsonResponse(
-        { error: "Server misconfiguration: missing API key" },
+        { error: "Server misconfiguration: missing API keys" },
         500
       );
     }
 
-    // 🧠 System Prompt — versi paling lengkap, dengan fokus pada kecepatan + kelengkapan output
+    console.log(`✅ Loaded ${validKeys.length} Gemini API keys`);
+
+    // System prompt
     const systemPrompt = `
 You are a diagram generation expert proficient in both Mermaid and PlantUML syntax.
 Your mission is to generate a fully valid, complete, and immediately renderable diagram that precisely represents the user's description.
@@ -138,196 +98,44 @@ MANDATORY RULES FOR ALL RESPONSES:
 - The output should be complete within one response.
 
 Now generate the most accurate diagram possible for the user's request.
-`.trim();
+`;
 
     const userPrompt = `User request:\n${prompt}`;
 
-    // Function to call API with retry logic
-    const callAIAPI = async () => {
-      if (useGLM) {
-        // GLM API call
-        const glmResponse = await fetch(
-          "https://api.z.ai/api/paas/v4/chat/completions",  // ✅ FIXED: Use Z.AI endpoint
-          {
-            method: "POST",
-            headers: {
-              "Authorization": `Bearer ${GLM_API_KEY}`,
-              "Content-Type": "application/json",
-              "Accept-Language": "en-US,en"
-            },
-            body: JSON.stringify({
-              model: "glm-4.5-flash",
-              messages: [
-                { role: "system", content: systemPrompt },
-                { role: "user", content: userPrompt }
-              ],
-              temperature: 0.7,
-              top_p: 0.95,
-              max_tokens: 8192,
-            }),
-          }
-        );
-
-        if (!glmResponse.ok) {
-          const errorText = await glmResponse.text();
-          console.error("❌ GLM API error:", glmResponse.status, errorText);
-
-          let errorMessage = "Gagal membuat diagram";
-          try {
-            const errorData = JSON.parse(errorText);
-            const apiError = errorData?.error?.message || "";
-            const errorCode = errorData?.error?.code || "";
-
-            // Handle GLM-specific concurrency error
-            if (errorCode === "1302" || apiError.includes("High concurrency")) {
-              throw new Error("GLM_CONCURRENCY_ERROR: " + apiError);
-            }
-
-            if (glmResponse.status === 429) {
-              errorMessage = "Terlalu banyak permintaan. Silakan tunggu beberapa saat dan coba lagi.";
-              throw new Error(errorMessage);
-            }
-
-            if (glmResponse.status === 503) {
-              errorMessage = "Layanan GLM sedang sibuk. Silakan coba lagi dalam beberapa saat.";
-              throw new Error(errorMessage);
-            }
-
-            if (glmResponse.status === 401) {
-              errorMessage = "Konfigurasi API key tidak valid. Silakan hubungi administrator.";
-              throw new Error(errorMessage);
-            }
-
-            if (glmResponse.status === 400) {
-              errorMessage = "Permintaan tidak valid. Silakan coba lagi dengan prompt yang berbeda.";
-              throw new Error(errorMessage);
-            }
-          } catch (parseError) {
-            if (parseError instanceof Error && parseError.message.includes("GLM_CONCURRENCY_ERROR")) {
-              throw parseError;
-            }
-            console.error("Failed to parse error response:", parseError);
-          }
-
-          throw new Error(`${errorMessage} (Error ${glmResponse.status})`);
-        }
-
-        const data = await glmResponse.json();
-        console.log("🧠 GLM raw response:", JSON.stringify(data, null, 2));
-
-        const generatedText = data?.choices?.[0]?.message?.content ?? null;
-
-        if (!generatedText) {
-          console.error("⚠️ Invalid GLM response structure:", data);
-          throw new Error("No diagram returned from GLM API");
-        }
-
-        return generatedText;
-      } else {
-        // Gemini API call (fallback)
-        const geminiResponse = await fetch(
-          `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`,
-          {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              contents: [{ parts: [{ text: `${systemPrompt}\n\n${userPrompt}` }] }],
-              generationConfig: {
-                temperature: 0.7,
-                topP: 0.95,
-                topK: 50,
-                candidateCount: 1,
-                maxOutputTokens: 8192,
-                responseMimeType: "text/plain",
-              },
-            }),
-          }
-        );
-
-        if (!geminiResponse.ok) {
-          const errorText = await geminiResponse.text();
-          console.error("❌ Gemini API error:", geminiResponse.status, errorText);
-
-          let errorMessage = "Gagal membuat diagram";
-          try {
-            const errorData = JSON.parse(errorText);
-            const apiError = errorData?.error?.message || "";
-
-            if (geminiResponse.status === 429) {
-              if (apiError.includes("quota") || apiError.includes("RESOURCE_EXHAUSTED")) {
-                errorMessage = "Kuota API Gemini telah habis. Silakan coba lagi nanti atau upgrade ke paket berbayar.";
-              } else {
-                errorMessage = "Terlalu banyak permintaan. Silakan tunggu beberapa saat dan coba lagi.";
-              }
-              throw new Error(errorMessage);
-            }
-
-            if (geminiResponse.status === 503) {
-              errorMessage = "Layanan Gemini sedang sibuk. Silakan coba lagi dalam beberapa saat.";
-              throw new Error(errorMessage);
-            }
-
-            if (geminiResponse.status === 401) {
-              errorMessage = "Konfigurasi API key tidak valid. Silakan hubungi administrator.";
-              throw new Error(errorMessage);
-            }
-
-            if (geminiResponse.status === 400) {
-              errorMessage = "Permintaan tidak valid. Silakan coba lagi dengan prompt yang berbeda.";
-              throw new Error(errorMessage);
-            }
-          } catch (parseError) {
-            console.error("Failed to parse error response:", parseError);
-          }
-
-          throw new Error(`${errorMessage} (Error ${geminiResponse.status})`);
-        }
-
-        const data = await geminiResponse.json();
-        console.log("🧠 Gemini raw response:", JSON.stringify(data, null, 2));
-
-        const finishReason = data?.candidates?.[0]?.finishReason;
-        if (finishReason === "MAX_TOKENS") {
-          console.warn(
-            "⚠️ Gemini response exceeded MAX_TOKENS limit, returning partial response"
-          );
-        }
-
-        const generatedText =
-          data?.candidates?.[0]?.content?.parts?.[0]?.text ??
-          data?.candidates?.[0]?.output ??
-          null;
-
-        if (!generatedText) {
-          console.error("⚠️ Invalid Gemini response structure:", data);
-          throw new Error("No diagram returned from Gemini API");
-        }
-
-        return generatedText;
-      }
-    };
-
-    // Call API with retry logic for concurrency errors
-    // Increased retries: 5 attempts with 2s initial delay for better success rate
-    let generatedText: string;
-    try {
-      generatedText = await retryWithBackoff(callAIAPI, 5, 2000);
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : String(error);
+    // 🔄 Multi-Key Rotation with Automatic Failover
+    const callGeminiWithRotation = async (): Promise<string> => {
+      const maxAttempts = 5; // Try up to 5 keys
       
-      // Check if it's a concurrency error after all retries
-      const isConcurrencyError = errorMessage.includes('1302') || 
-                                 errorMessage.includes('High concurrency') ||
-                                 errorMessage.includes('concurrent connection');
-      
-      // If GLM failed due to concurrency AND we have Gemini as fallback, try Gemini
-      if (isConcurrencyError && useGLM && GEMINI_API_KEY) {
-        console.log('🔄 GLM concurrency limit reached after all retries, falling back to Gemini API...');
-        
+      for (let attempt = 1; attempt <= maxAttempts; attempt++) {
         try {
-          // Try Gemini as fallback
-          const geminiResponse = await fetch(
-            `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`,
+          // Get next available key from database
+          const { data: keyIndex, error: keyError } = await supabase
+            .rpc('get_next_available_key');
+
+          if (keyError) {
+            console.error("❌ Database error:", keyError);
+            throw new Error("Failed to get API key");
+          }
+
+          if (!keyIndex) {
+            console.error("❌ All keys exhausted");
+            return jsonResponse({ 
+              error: "⏰ Kuota harian telah habis (100 diagram/hari). Silakan coba lagi besok." 
+            }, 429);
+          }
+
+          const apiKey = GEMINI_KEYS[keyIndex - 1];
+          if (!apiKey) {
+            console.error(`❌ Key #${keyIndex} not configured`);
+            await supabase.rpc('mark_key_exhausted', { key_idx: keyIndex });
+            continue;
+          }
+
+          console.log(`🔑 Using API key #${keyIndex} (attempt ${attempt}/${maxAttempts})`);
+
+          // Call Gemini API
+          const response = await fetch(
+            `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`,
             {
               method: "POST",
               headers: { "Content-Type": "application/json" },
@@ -337,73 +145,75 @@ Now generate the most accurate diagram possible for the user's request.
                   temperature: 0.7,
                   topP: 0.95,
                   topK: 50,
-                  candidateCount: 1,
                   maxOutputTokens: 8192,
-                  responseMimeType: "text/plain",
                 },
               }),
             }
           );
 
-          if (geminiResponse.ok) {
-            const geminiData = await geminiResponse.json();
-            const geminiText = geminiData?.candidates?.[0]?.content?.parts?.[0]?.text ?? null;
-            
-            if (geminiText) {
-              console.log('✅ Successfully generated diagram using Gemini fallback');
-              generatedText = geminiText;
-            } else {
-              throw new Error('Gemini fallback: no text returned');
-            }
-          } else {
-            const geminiError = await geminiResponse.text();
-            console.error('❌ Gemini fallback failed:', geminiResponse.status, geminiError);
-            throw new Error('Gemini fallback failed');
+          // Handle 429 rate limit
+          if (response.status === 429) {
+            console.log(`⚠️ Key #${keyIndex} hit rate limit`);
+            await supabase.rpc('mark_key_exhausted', { key_idx: keyIndex });
+            continue; // Try next key
           }
-        } catch (geminiError) {
-          console.error('❌ Gemini fallback also failed:', geminiError);
-          // If Gemini also fails, return the original concurrency error
-          return jsonResponse({
-            error: "Layanan sedang sibuk karena banyak pengguna. Silakan tunggu 10-30 detik dan coba lagi."
-          }, 429);
-        }
-      } else if (isConcurrencyError) {
-        // GLM concurrency error but no Gemini fallback available
-        return jsonResponse({
-          error: "Layanan sedang sibuk karena banyak pengguna. Silakan tunggu 10-30 detik dan coba lagi."
-        }, 429);
-      } else {
-        // Other errors
-        return jsonResponse({
-          error: errorMessage
-        }, 500);
-      }
-    }
 
-    // 🧹 Bersihkan hasil
-    let cleanedDiagram = generatedText.trim();
-    if (cleanedDiagram.startsWith("```")) {
-      cleanedDiagram = cleanedDiagram
+          if (!response.ok) {
+            const errorText = await response.text();
+            console.error(`❌ API error (key #${keyIndex}):`, response.status, errorText);
+            
+            if (response.status === 503) {
+              throw new Error("Gemini service temporarily unavailable");
+            }
+            throw new Error(`API error: ${response.status}`);
+          }
+
+          // Success! Parse response
+          const data = await response.json();
+          const generatedText = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+
+          if (!generatedText) {
+            console.error("⚠️ No text in response");
+            throw new Error("No diagram generated");
+          }
+
+          // Increment usage counter
+          await supabase.rpc('increment_key_usage', { key_idx: keyIndex });
+          console.log(`✅ Success with key #${keyIndex}`);
+
+          return generatedText;
+
+        } catch (error) {
+          console.error(`❌ Attempt ${attempt} failed:`, error);
+          
+          if (attempt >= maxAttempts) {
+            throw error;
+          }
+          // Continue to next key
+        }
+      }
+
+      throw new Error("All API keys failed");
+    };
+
+    // Generate diagram
+    const generatedText = await callGeminiWithRotation();
+
+    // Clean markdown if present
+    let cleaned = generatedText.trim();
+    if (cleaned.startsWith("```")) {
+      cleaned = cleaned
         .replace(/```(mermaid|plantuml)?\n?/gi, "")
         .replace(/```/g, "")
         .trim();
     }
 
-    // Ensure we always return a valid diagram
-    if (!cleanedDiagram || cleanedDiagram.length === 0) {
-      console.warn("⚠️ Empty diagram after cleaning, using fallback");
-      cleanedDiagram = `graph TD
-    A["User Request"] --> B["Processing"]
-    B --> C["Result"]
-    
-    %% Generated from: ${prompt}`;
-    }
+    return jsonResponse({ diagram: cleaned });
 
-    return jsonResponse({ diagram: cleanedDiagram });
   } catch (err) {
-    console.error("🔥 Error in generate-diagram function:", err);
+    console.error("🔥 Error:", err);
     return jsonResponse(
-      { error: err instanceof Error ? err.message : "Unknown internal error" },
+      { error: err instanceof Error ? err.message : "Unknown error" },
       500
     );
   }
