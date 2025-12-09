@@ -150,16 +150,61 @@ IMPORTANT: The output must be immediately renderable without any modifications.
     // ✅ Kirim permintaan utama
     const data = await requestGemini(userPrompt);
 
-    // ✅ Ekstrak teks dari hasil Gemini (robust parsing)
-    const text =
-      data?.candidates?.[0]?.content?.parts?.[0]?.text?.trim() ??
-      data?.candidates?.[0]?.output?.trim() ??
-      null;
+    // ✅ Ekstrak teks dari hasil (support both Gemini and GLM formats)
+    let text: string | null = null;
+    
+    // Try Gemini format first
+    text = data?.candidates?.[0]?.content?.parts?.[0]?.text?.trim() ??
+           data?.candidates?.[0]?.output?.trim() ??
+           null;
+    
+    // If Gemini format failed, try GLM format
+    if (!text) {
+      // GLM API format: choices[0].message.content
+      text = data?.choices?.[0]?.message?.content?.trim() ?? null;
+    }
+    
+    // Check finish_reason for both APIs
+    const finishReason = data?.candidates?.[0]?.finishReason || 
+                        data?.choices?.[0]?.finish_reason;
+    
+    // Handle case where response was truncated due to length
+    if (finishReason === 'length' || finishReason === 'MAX_TOKENS') {
+      console.warn('⚠️ Response truncated due to length limit');
+      
+      // For GLM: try to extract from reasoning_content if content is empty
+      if (!text || text.length === 0) {
+        const reasoningContent = data?.choices?.[0]?.message?.reasoning_content;
+        if (reasoningContent) {
+          console.log('Attempting to extract diagram from reasoning_content...');
+          
+          // Try to find PlantUML or Mermaid code blocks in reasoning
+          const plantumlMatch = reasoningContent.match(/@startuml[\s\S]*?@enduml/);
+          const mermaidMatch = reasoningContent.match(/```(?:mermaid)?\n([\s\S]*?)```/);
+          
+          if (plantumlMatch) {
+            text = plantumlMatch[0];
+            console.log('✅ Extracted PlantUML from reasoning_content');
+          } else if (mermaidMatch) {
+            text = mermaidMatch[1];
+            console.log('✅ Extracted Mermaid from reasoning_content');
+          }
+        }
+      }
+      
+      // If still no text, return helpful error
+      if (!text || text.length === 0) {
+        console.error('⚠️ Response truncated and no diagram code found');
+        return jsonResponse({
+          error: 'AI response was too long and got truncated. Please try with a simpler diagram or break it into smaller parts.'
+        }, 500);
+      }
+    }
 
     if (!text) {
-      console.error("⚠️ Invalid Gemini response structure:", data);
+      console.error("⚠️ Invalid API response structure:", JSON.stringify(data, null, 2));
       return jsonResponse(
-        { error: "Gemini did not return a valid diagram fix." },
+        { error: "AI did not return a valid diagram fix. Please try again." },
         500,
       );
     }
