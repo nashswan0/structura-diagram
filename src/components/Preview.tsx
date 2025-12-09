@@ -119,6 +119,9 @@ const Preview: React.FC<PreviewProps> = ({ code, className, onCodeFixed }) => {
           const encoded = encodePlantUML(code);
           
           // Step 1: Check syntax using PlantUML text endpoint
+          // This gives us the FULL error message with code context
+          let txtErrorMessage: string | null = null;
+          
           try {
             const syntaxCheckUrl = `https://www.plantuml.com/plantuml/txt/${encoded}`;
             const syntaxResponse = await fetch(syntaxCheckUrl);
@@ -126,38 +129,39 @@ const Preview: React.FC<PreviewProps> = ({ code, className, onCodeFixed }) => {
             if (syntaxResponse.ok) {
               const syntaxText = await syntaxResponse.text();
               
-              // Check if syntax check returned an error
+              // Check if text output contains any error indicators
               if (syntaxText.includes('ERROR') || 
                   syntaxText.includes('Syntax error') ||
-                  syntaxText.includes('Error line')) {
-                // Extract and clean error message
-                const errorLines = syntaxText.split('\n').filter(line => 
-                  line.includes('ERROR') || 
-                  line.includes('Error') || 
-                  line.includes('line')
-                );
-                const errorMessage = errorLines.length > 0 
-                  ? errorLines.join('\n').trim()
-                  : syntaxText.trim();
+                  syntaxText.includes('Cannot find') ||
+                  syntaxText.includes('Error line') ||
+                  syntaxText.includes('Error at line')) {
                 
-                throw new Error(`PlantUML Syntax Error:\n${errorMessage}`);
+                // Use the FULL text output as error message
+                // It contains complete context including code and line numbers
+                const cleanedError = syntaxText
+                  .split('\n')
+                  .filter(line => line.trim().length > 0)
+                  .join('\n');
+                
+                console.log('PlantUML error detected from /txt endpoint:', cleanedError);
+                txtErrorMessage = cleanedError;
               }
             }
           } catch (syntaxError) {
-            // If it's our thrown error, re-throw it
-            if (syntaxError instanceof Error && syntaxError.message.includes('PlantUML Syntax Error')) {
-              throw syntaxError;
-            }
-            // Otherwise, continue to SVG render (syntax check might have failed for other reasons)
+            // If syntax check fails, log but continue to SVG render
             console.warn('PlantUML syntax check failed, proceeding with SVG render:', syntaxError);
           }
           
-          // Step 2: Render SVG (or get error image)
+          // If we found an error in /txt, throw it immediately
+          if (txtErrorMessage) {
+            throw new Error(`PlantUML Syntax Error:\n${txtErrorMessage}`);
+          }
+          
+          // Step 2: Render SVG (only if no error detected in /txt)
           const plantUMLUrl = `https://www.plantuml.com/plantuml/svg/${encoded}`;
           const response = await fetch(plantUMLUrl);
           
-          // PlantUML returns 400 for syntax errors but still provides error image in response
-          // So we need to get the text regardless of status code
+          // Get SVG content
           let svgText = '';
           try {
             svgText = await response.text();
@@ -171,39 +175,33 @@ const Preview: React.FC<PreviewProps> = ({ code, className, onCodeFixed }) => {
             throw new Error(`PlantUML server returned empty response (status: ${response.status})`);
           }
           
-          // Step 3: Check if SVG contains error indicators
-          // PlantUML error images usually contain specific text patterns
+          // Step 3: Safety check - if SVG still contains error indicators
+          // (shouldn't happen if /txt check passed, but just in case)
           const svgLower = svgText.toLowerCase();
-          const hasErrorIndicator = svgLower.includes('syntax error') || 
-                                    svgLower.includes('error line') ||
-                                    svgLower.includes('error at line') ||
-                                    (svgLower.includes('error') && svgText.length < 3000);
-          
-          if (hasErrorIndicator) {
-            console.log('PlantUML error detected, extracting error message...');
+          if (svgLower.includes('syntax error') || 
+              svgLower.includes('cannot find') ||
+              svgLower.includes('error at line')) {
             
-            // Try to extract error text from SVG
-            const textMatches = svgText.match(/>([^<]*(?:error|Error|line \d+)[^<]*)</gi);
-            if (textMatches && textMatches.length > 0) {
-              const errorTexts = textMatches
-                .map(match => match.replace(/<[^>]*>/g, '').replace(/>/g, '').trim())
-                .filter(text => text.length > 3 && (
-                  text.toLowerCase().includes('error') || 
-                  text.toLowerCase().includes('line')
-                ))
-                .slice(0, 5); // Limit to first 5 error lines
+            console.warn('SVG contains error despite /txt check passing. Re-fetching /txt for details...');
+            
+            // Re-fetch /txt to get detailed error message
+            try {
+              const txtUrl = `https://www.plantuml.com/plantuml/txt/${encoded}`;
+              const txtResponse = await fetch(txtUrl);
+              const txtContent = await txtResponse.text();
               
-              if (errorTexts.length > 0) {
-                const errorMessage = errorTexts.join('\n');
-                console.log('Extracted error message:', errorMessage);
-                throw new Error(`PlantUML Syntax Error:\n${errorMessage}`);
+              if (txtContent && txtContent.trim().length > 0) {
+                throw new Error(`PlantUML Error:\n${txtContent}`);
               }
+            } catch (refetchError) {
+              console.error('Failed to re-fetch /txt:', refetchError);
             }
             
-            // If we can't extract specific error, show generic message
+            // If re-fetch failed, use generic message
             throw new Error('PlantUML syntax error detected. Please check your diagram code for errors.');
           }
           
+          // No errors detected, display the SVG
           setSvg(svgText);
         } else {
           // Render Mermaid
