@@ -60,7 +60,7 @@ const TokenPurchase = () => {
             price: 5000,
             description: 'Perfect for light users or students trying Structura AI for the first time.',
             descriptionId: 'Sempurna untuk pengguna ringan atau pelajar yang mencoba Structura AI.',
-            icon: <Coins className="w-8 h-8 text-yellow-500" />,
+            icon: <img src={structuraToken} alt="Token" className="w-8 h-8 object-contain" />,
             gradient: 'from-blue-500 to-cyan-500'
         },
         {
@@ -71,7 +71,7 @@ const TokenPurchase = () => {
             price: 10000,
             description: 'Ideal for learners or small projects with balanced value.',
             descriptionId: 'Ideal untuk pembelajar atau proyek kecil dengan nilai seimbang.',
-            icon: <Coins className="w-8 h-8 text-yellow-500" />,
+            icon: <img src={structuraToken} alt="Token" className="w-8 h-8 object-contain" />,
             gradient: 'from-purple-500 to-pink-500'
         },
         {
@@ -82,7 +82,7 @@ const TokenPurchase = () => {
             price: 20000,
             description: 'Best for developers, students, and creators who need consistent usage.',
             descriptionId: 'Terbaik untuk developer, pelajar, dan kreator yang butuh penggunaan konsisten.',
-            icon: <Coins className="w-8 h-8 text-yellow-500" />,
+            icon: <img src={structuraToken} alt="Token" className="w-8 h-8 object-contain" />,
             popular: true,
             gradient: 'from-violet-500 to-purple-500'
         },
@@ -94,7 +94,7 @@ const TokenPurchase = () => {
             price: 25000,
             description: 'Designed for productivity power users and teams.',
             descriptionId: 'Dirancang untuk power user produktivitas dan tim.',
-            icon: <Coins className="w-8 h-8 text-yellow-500" />,
+            icon: <img src={structuraToken} alt="Token" className="w-8 h-8 object-contain" />,
             gradient: 'from-amber-500 to-orange-500'
         },
         {
@@ -105,7 +105,7 @@ const TokenPurchase = () => {
             price: 40000,
             description: 'For professionals and educators with heavy workloads.',
             descriptionId: 'Untuk profesional dan pendidik dengan beban kerja berat.',
-            icon: <Coins className="w-8 h-8 text-yellow-500" />,
+            icon: <img src={structuraToken} alt="Token" className="w-8 h-8 object-contain" />,
             bestValue: true,
             gradient: 'from-pink-500 to-rose-500'
         }
