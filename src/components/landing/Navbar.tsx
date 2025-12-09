@@ -149,10 +149,10 @@ const Navbar = () => {
               Contact
             </button>
             <button 
-              onClick={() => navigate('/tokens')}
+              onClick={handleComingSoon}
               className="text-sm font-semibold text-slate-700 dark:text-slate-300 hover:text-primary transition-colors flex items-center gap-1.5"
             >
-              {/* <Lock size={14} /> */}
+              <Lock size={14} />
               {language === 'EN' ? 'Buy Tokens' : 'Beli Token'}
             </button>
           </div>

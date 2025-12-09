@@ -35,7 +35,7 @@ const App = () => (
                 }
               />
               {/* Enable/DIsable Route Path for Token Purchase (Sandbox Mode) */}
-              <Route
+              {/* <Route
                 path="/purchase"
                 element={
                   <ProtectedRoute>
@@ -50,7 +50,7 @@ const App = () => (
                     <TokenPurchase />
                   </ProtectedRoute>
                 }
-              />
+              /> */}
               <Route path="*" element={<NotFound />} />
             </Routes>
           </BrowserRouter>
