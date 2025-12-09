@@ -218,6 +218,13 @@ const Preview: React.FC<PreviewProps> = ({ code, className, onCodeFixed }) => {
             setSvg(svg);
           } catch (mermaidError) {
             console.error('Mermaid render error:', mermaidError);
+            
+            // Clean up any error SVG that Mermaid might have generated
+            const errorDiagram = document.getElementById('mermaid-diagram');
+            if (errorDiagram) {
+              errorDiagram.remove();
+            }
+            
             throw mermaidError;
           }
         }
@@ -298,3 +305,4 @@ const Preview: React.FC<PreviewProps> = ({ code, className, onCodeFixed }) => {
 };
 
 export default Preview;
+

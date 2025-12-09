@@ -148,3 +148,9 @@
 .text-gradient {
   @apply bg-gradient-primary bg-clip-text text-transparent;
 }
+
+/* Hide Mermaid error SVG - we show errors in our custom error box */
+svg[role="graphics-document"][aria-roledescription="error"] {
+  display: none !important;
+}
+
