@@ -314,17 +314,69 @@ Now generate the most accurate diagram possible for the user's request.
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : String(error);
       
-      // Check if it's still a concurrency error after all retries
-      if (errorMessage.includes('1302') || errorMessage.includes('High concurrency')) {
-        return jsonResponse({
-          error: "Layanan sedang sibuk karena banyak pengguna. Silakan tunggu 5-10 detik dan coba lagi."
-        }, 429);
-      }
+      // Check if it's a concurrency error after all retries
+      const isConcurrencyError = errorMessage.includes('1302') || 
+                                 errorMessage.includes('High concurrency') ||
+                                 errorMessage.includes('concurrent connection');
       
-      // Return other errors as-is
-      return jsonResponse({
-        error: errorMessage
-      }, 500);
+      // If GLM failed due to concurrency AND we have Gemini as fallback, try Gemini
+      if (isConcurrencyError && useGLM && GEMINI_API_KEY) {
+        console.log('🔄 GLM concurrency limit reached after all retries, falling back to Gemini API...');
+        
+        try {
+          // Try Gemini as fallback
+          const geminiResponse = await fetch(
+            `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`,
+            {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                contents: [{ parts: [{ text: `${systemPrompt}\n\n${userPrompt}` }] }],
+                generationConfig: {
+                  temperature: 0.7,
+                  topP: 0.95,
+                  topK: 50,
+                  candidateCount: 1,
+                  maxOutputTokens: 8192,
+                  responseMimeType: "text/plain",
+                },
+              }),
+            }
+          );
+
+          if (geminiResponse.ok) {
+            const geminiData = await geminiResponse.json();
+            const geminiText = geminiData?.candidates?.[0]?.content?.parts?.[0]?.text ?? null;
+            
+            if (geminiText) {
+              console.log('✅ Successfully generated diagram using Gemini fallback');
+              generatedText = geminiText;
+            } else {
+              throw new Error('Gemini fallback: no text returned');
+            }
+          } else {
+            const geminiError = await geminiResponse.text();
+            console.error('❌ Gemini fallback failed:', geminiResponse.status, geminiError);
+            throw new Error('Gemini fallback failed');
+          }
+        } catch (geminiError) {
+          console.error('❌ Gemini fallback also failed:', geminiError);
+          // If Gemini also fails, return the original concurrency error
+          return jsonResponse({
+            error: "Layanan sedang sibuk karena banyak pengguna. Silakan tunggu 10-30 detik dan coba lagi."
+          }, 429);
+        }
+      } else if (isConcurrencyError) {
+        // GLM concurrency error but no Gemini fallback available
+        return jsonResponse({
+          error: "Layanan sedang sibuk karena banyak pengguna. Silakan tunggu 10-30 detik dan coba lagi."
+        }, 429);
+      } else {
+        // Other errors
+        return jsonResponse({
+          error: errorMessage
+        }, 500);
+      }
     }
 
     // 🧹 Bersihkan hasil
