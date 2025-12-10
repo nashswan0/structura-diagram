@@ -44,7 +44,8 @@ BEGIN
         is_exhausted = FALSE,
         last_reset_date = CURRENT_DATE,
         last_reset_timestamp = current_time_utc,
-        updated_at = NOW();
+        updated_at = NOW()
+      WHERE TRUE;  -- Required by Supabase: explicit WHERE clause
         
       RAISE NOTICE 'Keys reset at % (15:00 WIB)', current_time_utc;
     END IF;

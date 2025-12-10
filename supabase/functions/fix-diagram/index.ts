@@ -118,10 +118,10 @@ Fix the error and return ONLY the corrected code.`;
               body: JSON.stringify({
                 contents: [{ parts: [{ text: `${systemPrompt}\n\n${userPrompt}` }] }],
                 generationConfig: {
-                  temperature: 0.3,  // Low for focused fixes
+                  temperature: 0.5,  // Low for focused fixes
                   topP: 0.7,
                   topK: 40,
-                  maxOutputTokens: 4096,  // Smaller for fixes
+                  maxOutputTokens: 8192,  // Smaller for fixes
                 },
               }),
             }
