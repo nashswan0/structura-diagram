@@ -194,6 +194,11 @@ const Preview: React.FC<PreviewProps> = ({ code, className, onCodeFixed }) => {
                 throw new Error(`PlantUML Error:\n${txtContent}`);
               }
             } catch (refetchError) {
+              // If it's our thrown PlantUML error, re-throw it
+              if (refetchError instanceof Error && refetchError.message.startsWith('PlantUML Error:')) {
+                throw refetchError;
+              }
+              // Otherwise log the fetch error and continue to generic message
               console.error('Failed to re-fetch /txt:', refetchError);
             }
             
