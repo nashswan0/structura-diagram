@@ -85,26 +85,44 @@ const AIPrompt: React.FC<AIPromptProps> = ({ prompt, onDiagramGenerated, onExpor
     }
   };
 
+  const isDisabled = loading || !prompt.trim() || (!isAdmin && tokens <= 0);
+  const isNoTokens = !isAdmin && tokens <= 0;
+
   return (
     <>
       <div className={cn("flex flex-col md:flex-row items-stretch gap-2 md:gap-3 w-full", className)}>
-        <Button
-          onClick={handleGenerate}
-          disabled={loading || !prompt.trim() || (!isAdmin && tokens <= 0)}
-          className="flex-1 bg-gradient-primary hover:opacity-90 transition-all duration-300 shadow-lg"
+        {/* Wrapper div to capture clicks on disabled button */}
+        <div 
+          className="flex-1"
+          onClick={() => {
+            // Show toast if disabled due to no tokens
+            if (isNoTokens && !loading) {
+              toast({
+                title: t.auth.outOfTokens,
+                description: t.auth.noTokensMessage,
+                variant: "destructive",
+              });
+            }
+          }}
         >
-          {loading ? (
-            <>
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Generating...
-            </>
-          ) : (
-            <>
-              <Sparkles className="mr-2 h-4 w-4" />
-              Generate with AI
-            </>
-          )}
-        </Button>
+          <Button
+            onClick={handleGenerate}
+            disabled={isDisabled}
+            className="w-full bg-gradient-primary hover:opacity-90 transition-all duration-300 shadow-lg"
+          >
+            {loading ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Generating...
+              </>
+            ) : (
+              <>
+                <Sparkles className="mr-2 h-4 w-4" />
+                Generate with AI
+              </>
+            )}
+          </Button>
+        </div>
 
         <Button
           onClick={onExport}

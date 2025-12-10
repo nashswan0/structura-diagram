@@ -27,13 +27,18 @@ serve(async (req) => {
     const { prompt } = await req.json();
     if (!prompt) return jsonResponse({ error: "Prompt is required" }, 400);
 
-    // Load all 5 Gemini API keys
+    // Load all 10 Gemini API keys (200 RPD capacity)
     const GEMINI_KEYS = [
       Deno.env.get("GEMINI_API_KEY_1"),
       Deno.env.get("GEMINI_API_KEY_2"),
       Deno.env.get("GEMINI_API_KEY_3"),
       Deno.env.get("GEMINI_API_KEY_4"),
       Deno.env.get("GEMINI_API_KEY_5"),
+      Deno.env.get("GEMINI_API_KEY_6"),
+      Deno.env.get("GEMINI_API_KEY_7"),
+      Deno.env.get("GEMINI_API_KEY_8"),
+      Deno.env.get("GEMINI_API_KEY_9"),
+      Deno.env.get("GEMINI_API_KEY_10"),
     ];
 
     // Verify at least one key exists
@@ -48,37 +53,35 @@ serve(async (req) => {
 
     console.log(`✅ Loaded ${validKeys.length} Gemini API keys`);
 
-    // System prompt - OPTIMIZED FOR DETAILED OUTPUT
+    // System prompt - BALANCED FOR SMART DETAIL LEVEL
     const systemPrompt = `
-You are a diagram generation expert proficient in both Mermaid and PlantUML syntax.
+You are a world's best diagram generation expert proficient in both Mermaid and PlantUML syntax.
 Your mission is to generate a fully valid, complete, and immediately renderable diagram that precisely represents the user's description.
 
-🎯 CRITICAL INSTRUCTIONS FOR COMPREHENSIVE DETAIL:
-- Generate EXTREMELY DETAILED and COMPLETE diagrams
-- Include ALL possible actors, use cases, nodes, and relationships
-- Be THOROUGH and COMPREHENSIVE - do not simplify or summarize
-- For use case diagrams: include ALL actors (primary, secondary, admin) and ALL possible use cases
-- For ERDs: include ALL entities, attributes, and relationships
-- For flowcharts: include ALL steps, decisions, and error handling paths
-- For sequence diagrams: show COMPLETE message flows with all interactions
-- For class diagrams: include ALL methods, properties, and relationships
-- Aim for MAXIMUM completeness - the more detail, the better!
+🎯 SMART DETAIL LEVEL:
+- Analyze the user's prompt to determine desired detail level
+- If user asks for "detail", "lengkap", "comprehensive", "complete" → Generate VERY DETAILED diagrams
+- If user asks for "simple", "basic", "sederhana" → Generate CONCISE diagrams
+- Otherwise → Generate BALANCED diagrams with essential elements
 
-MANDATORY RULES FOR ALL RESPONSES:
-- Make sure to create the diagram based on the user's prompt language. If it's written in English, create diagram using English. If it's written in Bahasa Indonesia, create diagram using Bahasa Indonesia.
-- Use the correct shape/node in every diagram. Especially in flowchart, if it's process, use rectangle shape. If it's decision, use diamond shape. If it's start/end, use rounded rectangle shape.
+BALANCED APPROACH (default):
+- Include main actors and primary use cases
+- Cover core functionality and key relationships
+- Include important decision points and error handling
+- Avoid excessive detail unless specifically requested
+- Focus on clarity and readability
 
-🧩 Diagram Rules:
-- If NOT UML-specific → use Mermaid syntax (flowchart, ERD, Gantt, Kanban, pie chart, git graph, state diagram, timeline, etc.)
+MANDATORY RULES:
+- Match user's language (English/Indonesian)
+- Use correct shapes for every activity, process, decision, start, end, etc.
+- Output ONLY valid code (no markdown, no explanations)
+
+🧩 Diagram Syntax Rules:
+- If NOT UML-specific → use Mermaid syntax (ERD, flowchart, Gantt, Kanban, pie chart, git graph, state diagram, timeline, etc.)
 - If UML-specific → use PlantUML syntax (sequence, class, activity, use case, component, deployment, object, etc.)
 - Output ONLY the valid code (no markdown, no explanations, no comments).
 
-📏 Formatting:
-- For Mermaid → pure Mermaid code only.
-- For PlantUML → must start with "@startuml" and end with "@enduml".
-- Maintain spacing, indentation, and alignment for readability.
-
-🧰 Syntax Safety & Validation:
+🧰 Mermaid Syntax Safety Rules:
 - Every node/subgraph ID must be unique.
   Example: If both share "B", rename subgraph as "B_SG".
 - Never connect a node to itself (no "A --> A").
@@ -89,46 +92,77 @@ MANDATORY RULES FOR ALL RESPONSES:
 - Do not escape quotes using backslashes.
 - Each arrow or connection must be on its own line (or separated by a semicolon).
 - Ensure no cyclic dependencies, duplicated IDs, or malformed edges.
-- If invalid structure is detected, self-correct automatically.
-- Make sure to use the correct shape for each node.
-- Final output must be 100% valid and renderable without edits.
+- Any label that contains parentheses (), slash /, colon :, dash -, ampersand &, comma ,, or other special characters MUST always be wrapped in double quotes.
+- NEVER place special characters directly inside a Mermaid node label without quotes. Doing so causes Mermaid parse errors.
+- When a decision node is used in Mermaid (e.g., A{...}), and the content contains any special characters, AUTO-CONVERT it into a quoted label version:
+    A{"Verifikasi OTP (Email/SMS)"}
+- Prevent collisions between Mermaid syntax characters and text labels by quoting any label that is not plain alphanumeric.
 
-- Mermaid Safety Rule:
-  • Any label that contains parentheses (), slash /, colon :, dash -, ampersand &, comma ,, or other special characters MUST always be wrapped in double quotes.
-    Example: A["Verifikasi OTP (Email/SMS)"]
-  • NEVER place special characters directly inside a Mermaid node label without quotes. Doing so causes Mermaid parse errors.
-  • When a decision node is used in Mermaid (e.g., A{...}), and the content contains any special characters, AUTO-CONVERT it into a quoted label version:
-      A{"Verifikasi OTP (Email/SMS)"}
-  • Always validate all Mermaid labels and auto-add quotes if missing.
-  • Prevent collisions between Mermaid syntax characters and text labels by quoting any label that is not plain alphanumeric.
+🧰 PlantUML Syntax Safety Rules:
+1. For activity diagram with swimlanes (HIGHLY RECOMMENDED for multi-actor processes):
+   - Use pipe | to define swimlanes (columns) for each actor/role
+   - Syntax: |Actor Name|
+   - Place activities under the appropriate actor's swimlane
+   - Arrows can cross swimlanes to show interaction between actors
+    - ALWAYS use swimlanes when diagram involves multiple actors/departments
+   - Each swimlane represents one actor's responsibilities
+   - Activities flow vertically within swimlanes
+   - Use arrows to show handoffs between actors
+   - **IMPORTANT: Use only ONE 'stop' statement at the very end of the diagram**
+   - All branches and paths should converge to a single endpoint
+   - Avoid multiple 'stop' statements in different branches
+   
+   Example structure:
+   @startuml
+   |Bagian Gudang|
+   start
+   :Member informasi data\nBarang yang akan dipesan;
+   
+   |Bagian Pembelian|
+   :Menerima informasi;
+   :Buat SPP;
+   
+   |Supplier|
+   :Terima SPP;
+   :Kirim Barang;
+   
+   |Bagian Gudang|
+   :Terima Barang dan Faktur;
+   :Buat SPB1;
+   
+   |Bagian Pembelian|
+   :Tandatangani SPB1;
+   stop
+   @enduml
+  
+   
+2. For parallel processing (optional):
+   - Use fork, fork again, and end fork for concurrent activities
+   - Use end merge to synchronize parallel flows
 
-🚀 Performance Optimization:
-- Use concise but descriptive variable names.
-- Keep the diagram well-structured and logically organized.
-- Aim for MAXIMUM detail and completeness - use as many tokens as needed.
-- The output should be comprehensive and production-ready.
-- Prioritize completeness and detail over brevity.
+🚀 Performance:
+- Well-structured and organized
+- Complete within one response
+- Balance detail with clarity
 
-EXAMPLES OF COMPREHENSIVE OUTPUT:
-
-For "sistem pemesanan produk online", include:
-- Actors: Pelanggan, Admin, Sistem Pembayaran, Kurir
-- Use Cases: Registrasi, Login, Cari Produk, Lihat Detail, Tambah Keranjang, Checkout, Bayar, Lihat Status, Beri Ulasan, Kelola Produk, Kelola Kategori, Kelola Pesanan, Kelola Pengguna, Lihat Laporan, dll.
-
-Now generate the most accurate, detailed, and comprehensive diagram possible for the user's request.
+Now generate an accurate, well-balanced diagram for the user's request.
 `;
 
     const userPrompt = `User request:\n${prompt}`;
 
     // 🔄 Multi-Key Rotation with Automatic Failover
     const callGeminiWithRotation = async (): Promise<string> => {
-      const maxAttempts = 5; // Try up to 5 keys
+      const maxAttempts = 10; // Try up to 10 keys
+      const exhaustedKeysThisRequest = new Set<number>(); // Track exhausted keys in memory
       
       for (let attempt = 1; attempt <= maxAttempts; attempt++) {
         try {
-          // Get next available key from database
+          // Convert Set to array for RPC call
+          const excludedKeys = Array.from(exhaustedKeysThisRequest);
+          
+          // Get next available key from database, excluding already-tried keys
           const { data: keyIndex, error: keyError } = await supabase
-            .rpc('get_next_available_key');
+            .rpc('get_next_available_key_excluding', { excluded_keys: excludedKeys });
 
           if (keyError) {
             console.error("❌ Database error:", keyError);
@@ -136,16 +170,14 @@ Now generate the most accurate, detailed, and comprehensive diagram possible for
           }
 
           if (!keyIndex) {
-            console.error("❌ All keys exhausted");
-            return jsonResponse({ 
-              error: "⏰ Kuota harian telah habis (100 diagram/hari). Silakan coba lagi besok." 
-            }, 429);
+            console.error("❌ All keys exhausted for today");
+            throw new Error("⏰ Kuota harian telah habis (100 diagram/hari). Silakan coba lagi besok.");
           }
 
           const apiKey = GEMINI_KEYS[keyIndex - 1];
           if (!apiKey) {
-            console.error(`❌ Key #${keyIndex} not configured`);
-            await supabase.rpc('mark_key_exhausted', { key_idx: keyIndex });
+            console.error(`❌ Key #${keyIndex} not configured, skipping`);
+            exhaustedKeysThisRequest.add(keyIndex); // Mark as tried
             continue;
           }
 
@@ -169,21 +201,42 @@ Now generate the most accurate, detailed, and comprehensive diagram possible for
             }
           );
 
-          // Handle 429 rate limit
+          // Handle 429 rate limit - sync database with actual API state
           if (response.status === 429) {
-            console.log(`⚠️ Key #${keyIndex} hit rate limit`);
+            const errorBody = await response.text();
+            console.log(`⚠️ Key #${keyIndex} hit rate limit (20 RPD reached)`);
+            console.log(`   Raw 429 response:`, errorBody);
+            // Mark as exhausted to sync database with Gemini API state
             await supabase.rpc('mark_key_exhausted', { key_idx: keyIndex });
+            // Also track in memory to prevent re-querying this key
+            exhaustedKeysThisRequest.add(keyIndex);
             continue; // Try next key
           }
 
           if (!response.ok) {
             const errorText = await response.text();
-            console.error(`❌ API error (key #${keyIndex}):`, response.status, errorText);
+            console.error(`❌ API error (key #${keyIndex}):`);
+            console.error(`   Status: ${response.status} ${response.statusText}`);
+            console.error(`   Raw response:`, errorText);
+            
+            // Try to parse as JSON for better readability
+            try {
+              const errorJson = JSON.parse(errorText);
+              console.error(`   Parsed error:`, JSON.stringify(errorJson, null, 2));
+            } catch (e) {
+              console.error(`   (Not JSON format)`);
+            }
             
             if (response.status === 503) {
               throw new Error("Gemini service temporarily unavailable");
             }
-            throw new Error(`API error: ${response.status}`);
+            if (response.status === 401) {
+              throw new Error(`API key #${keyIndex} is invalid or unauthorized`);
+            }
+            if (response.status === 400) {
+              throw new Error(`Bad request to Gemini API (key #${keyIndex})`);
+            }
+            throw new Error(`API error: ${response.status} - ${response.statusText}`);
           }
 
           // Success! Parse response
