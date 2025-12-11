@@ -26,7 +26,16 @@ const Landing = () => {
     }
   }, []);
   return (
-    <div className="min-h-screen overflow-x-hidden">
+    <div className="min-h-screen overflow-x-hidden landing-page-bg">
+      {/* Grid pattern overlay */}
+      <div className="landing-grid-pattern" />
+      
+      {/* Purple gradient glows */}
+      <div className="landing-glow landing-glow-top-left" />
+      <div className="landing-glow landing-glow-bottom-right" />
+      <div className="landing-glow landing-glow-mid-left" />
+      <div className="landing-glow landing-glow-mid-right" />
+      
       <Navbar />
       <Hero />
       <Features />

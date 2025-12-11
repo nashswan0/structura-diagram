@@ -65,7 +65,7 @@ const SupportedDiagrams = () => {
   ];
 
   return (
-    <section className="py-20 px-4 sm:px-6 lg:px-8 border-b border-border/50">
+    <section className="py-20 px-4 sm:px-6 lg:px-8 border-b border-border/50 landing-section">
       <div className="container mx-auto">
         <div className="text-center mb-12 animate-fade-in">
           <h2 className="text-3xl md:text-5xl font-bold mb-4">

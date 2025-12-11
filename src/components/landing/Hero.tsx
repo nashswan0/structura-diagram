@@ -34,14 +34,12 @@ const Hero = () => {
 
   return (
     <section id="home" className="min-h-screen flex items-center justify-center relative overflow-hidden pt-20">
-      <div className="absolute inset-0 bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50 dark:from-purple-950/20 dark:via-pink-950/20 dark:to-blue-950/20" />
-      
       {/* Particle Background */}
       <ParticleBackground />
       
-      {/* Floating shapes */}
-      <div className="absolute top-20 left-10 w-72 h-72 bg-purple-300/30 rounded-full blur-3xl animate-pulse" />
-      <div className="absolute bottom-20 right-10 w-96 h-96 bg-pink-300/30 rounded-full blur-3xl animate-pulse delay-1000" />
+      {/* Floating shapes - adjusted for unified background */}
+      <div className="absolute top-20 left-10 w-72 h-72 bg-purple-400/20 dark:bg-purple-500/10 rounded-full blur-3xl animate-pulse" />
+      <div className="absolute bottom-20 right-10 w-96 h-96 bg-pink-400/20 dark:bg-pink-500/10 rounded-full blur-3xl animate-pulse delay-1000" />
       
       <div className="container mx-auto px-4 md:px-6 relative z-10">
         <div className="text-center max-w-4xl mx-auto animate-blur-in">

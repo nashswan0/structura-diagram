@@ -12,7 +12,7 @@ const FAQ = () => {
   const { t } = useLanguage();
 
   return (
-    <section id="faq" className="py-20 px-2 md:px-4 bg-gradient-to-b from-background to-muted/20">
+    <section id="faq" className="py-20 px-2 md:px-4 landing-section">
       <div className="container mx-auto max-w-4xl px-2 md:px-4">
       <div className="text-center mb-12 animate-fade-in">
         <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary/10 mb-4">

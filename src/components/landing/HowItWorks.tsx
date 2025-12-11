@@ -29,7 +29,7 @@ const HowItWorks = () => {
   ];
 
   return (
-    <section id="how-it-works" className="py-24 bg-slate-50 dark:bg-slate-950">
+    <section id="how-it-works" className="py-24 landing-section">
       <div className="container mx-auto px-6">
         <div className="text-center mb-16 animate-fade-in">
           <h2 className="text-3xl md:text-5xl font-display font-bold mb-4">
